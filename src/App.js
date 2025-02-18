@@ -4,9 +4,11 @@ import Login from "./pages/Login"; // Import the Login component
 import SignUp from "./pages/Signup";
 import Dashboard from "./pages/Dashboard"; // Placeholder for Dashboard
 import TaskStatus from "./pages/TaskStatus";
+import { TaskProvider } from "./context/TaskContext";
 
 const App = () => {
   return (
+    <TaskProvider>
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
@@ -16,6 +18,7 @@ const App = () => {
         <Route path="/task-status" element={<TaskStatus />} />
       </Routes>
     </Router>
+    </TaskProvider>
   );
 };
 
