@@ -1,14 +1,11 @@
 import { Link } from "react-router-dom";
 import { useEffect, useContext } from "react";
-import { TaskContext } from "../context/TaskContext";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import BuildIcon from "@mui/icons-material/Build";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import io from "socket.io-client";
 
-const socket = io("http://localhost:5000");
 
 export default function TaskStatus() {
   const { tasks, updateTaskStatus, setTasks } = useContext(TaskContext);
