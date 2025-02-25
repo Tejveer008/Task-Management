@@ -45,6 +45,7 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 ## Deployment
 
 To deploy your Vite app, follow these guides:
+<<<<<<< HEAD
 
 - [Vercel Deployment](https://vitejs.dev/guide/static-deploy.html#vercel)
 - [Netlify Deployment](https://vitejs.dev/guide/static-deploy.html#netlify)
@@ -67,3 +68,25 @@ If you're switching from Create React App to Vite, you may need to:
 4. Update `index.html` to include Vite's script loading method.
 
 Enjoy the speed and efficiency of Vite! 🚀
+=======
+- [Vercel Deployment](https://vitejs.dev/guide/static-deploy.html#vercel)
+- [Netlify Deployment](https://vitejs.dev/guide/static-deploy.html#netlify)
+- [GitHub Pages](https://vitejs.dev/guide/static-deploy.html#github-pages)
+
+### Migrating from CRA to Vite
+If you're switching from Create React App to Vite, you may need to:
+1. Install dependencies: `npm install`
+2. Update scripts in `package.json`:
+   ```json
+   "scripts": {
+     "dev": "vite",
+     "build": "vite build",
+     "preview": "vite preview"
+   }
+   ```
+3. Move your assets to the `public/` folder for static file serving.
+4. Update `index.html` to include Vite's script loading method.
+
+Enjoy the speed and efficiency of Vite! 🚀
+
+>>>>>>> 1e9bd5ae1c6d463ae3ca217cf202fe400d1ad969
