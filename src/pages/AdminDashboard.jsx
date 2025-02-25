@@ -1,5 +1,4 @@
 import React from 'react';
-import Sidebar from '../components/Sidebar';
 import ProjectCard from '../components/ProjectCard';
 import ClientMessages from '../components/ClientMessages';
 
