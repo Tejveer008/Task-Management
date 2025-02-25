@@ -1,63 +1,54 @@
-import React from 'react';
-import '../styles/Signup.css'; // Don't forget to link the CSS file
-import { useNavigate } from "react-router-dom";
-import logo from "../assets/logo.png"
-function App() {
-    const navigate = useNavigate(); // Hook for navigation
-    // Function to handle login button click
-    const handleLogin = () => {
-      // Here you can add authentication logic
-      navigate("/login"); // Navigate to Dashboard after login
-    };
-    return (
-        <div className="Signup-container">
-            <div className="split-container">
-                {/* Left Section with Image */}
-                <div className="left-section">
-                    <img
-                        src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/img1.webp"
-                        alt="login form"
-                        className="project-image"
-                    />
-                </div>
+import React, { useState } from 'react';
+import { Button, TextField, Typography, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
+import { Link } from 'react-router-dom';
 
-                {/* Right Section with Form */}
-                <div className="right-section">
-                    <div className="Signup-form">
-                        <div className="logo">
-                            <i className="fas fa-cubes logo-icon"></i>
-                            <img src={logo} alt='logo' className='front-logo' />
-                        </div>
+const Signup = () => {
+  const [role, setRole] = useState('user'); // default role is user
 
-                        <h5 className="Signup-title">Sign into your account</h5>
+  const handleRoleChange = (event) => {
+    setRole(event.target.value);
+  };
 
-                        <input
-                            className="input-field"
-                            type="name"
-                            placeholder="First name"
-                        />
-                        <input
-                            className="input-field"
-                            type="name"
-                            placeholder="Last name"
-                        />
-                        <input
-                            className="input-field"
-                            type="email"
-                            placeholder="Email Address"
-                        />
-                        <input
-                            className="input-field"
-                            type="password"
-                            placeholder="Password"
-                        />
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-600 to-black">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <Typography variant="h4" className="mb-4 text-center text-blue-600">Sign Up</Typography>
 
-<button className="Signup-button"  onClick={() => navigate("/login")}>Signup</button>
-                    </div>
-                </div>
-            </div>
+        <form className="space-y-4">
+          <TextField fullWidth label="Name" variant="outlined" />
+          <TextField fullWidth label="Email" variant="outlined" />
+          <TextField fullWidth label="Password" type="password" variant="outlined" />
+
+          {/* Role Selection Dropdown */}
+          <FormControl fullWidth>
+            <InputLabel id="role-select-label">Select Role</InputLabel>
+            <Select
+              labelId="role-select-label"
+              id="role-select"
+              value={role}
+              label="Select Role"
+              onChange={handleRoleChange}
+            >
+              <MenuItem value="user">User</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Button fullWidth variant="contained" color="primary">Sign Up</Button>
+        </form>
+
+        <div className="mt-6 flex justify-between">
+          <Button color="primary" variant="text">Sign up with Google</Button>
+          <Button color="primary" variant="text">Sign up with GitHub</Button>
+          <Button color="primary" variant="text">Sign up with LinkedIn</Button>
         </div>
-    );
-}
 
-export default App;
+        <div className="mt-4 text-center">
+          <Typography>Already have an account?<Link to="/login" className='text-blue-600'> Login</Link></Typography>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Signup;

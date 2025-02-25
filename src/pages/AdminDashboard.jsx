@@ -1,38 +1,37 @@
 import React from 'react';
+import Sidebar from '../components/Sidebar';
+import ProjectCard from '../components/ProjectCard';
+import ClientMessages from '../components/ClientMessages';
 
 const AdminDashboard = () => {
+  const projects = [
+    { title: 'Web Designing', progress: 90, dueDate: '2 Days', statusColor: 'blue' },
+    { title: 'Mobile App', progress: 30, dueDate: '3 Weeks', statusColor: 'yellow' },
+    { title: 'Dashboard Design', progress: 50, dueDate: '1 Week', statusColor: 'green' },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="bg-blue-600 p-6 text-white">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p>Welcome, Admin!</p>
-      </div>
-
-      <div className="p-6">
-        <h2 className="text-2xl font-bold mb-4">Manage Tasks and Users</h2>
-        
-        <div className="grid grid-cols-3 gap-6">
-          <div className="bg-white shadow-lg p-6 rounded-lg">
-            <h3 className="font-bold">To-Do Tasks</h3>
-            <p>Manage tasks that are yet to be started.</p>
-          </div>
-
-          <div className="bg-white shadow-lg p-6 rounded-lg">
-            <h3 className="font-bold">In-Progress Tasks</h3>
-            <p>Monitor tasks currently in progress.</p>
-          </div>
-
-          <div className="bg-white shadow-lg p-6 rounded-lg">
-            <h3 className="font-bold">Completed Tasks</h3>
-            <p>View and verify completed tasks.</p>
-          </div>
+    <div className="flex h-screen">
+      {/* <Sidebar /> */}
+      <div className="flex-1 bg-gray-100 p-6">
+        {/* Projects Section */}
+        <div className="mb-8">
+          <h2 className="font-bold text-xl">Projects</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+      {projects.map((project, index) => (
+        <ProjectCard
+          key={index}
+          title={project.title}
+          progress={project.progress}
+          status={project.status}
+          dueDate={project.dueDate}
+        />
+      ))}
+    </div>
         </div>
 
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Assign Tasks</h2>
-          <p>Assign new tasks to users here...</p>
-          {/* Add task assignment form or feature here */}
-        </div>
+        {/* Client Messages Section */}
+        <ClientMessages />
       </div>
     </div>
   );
