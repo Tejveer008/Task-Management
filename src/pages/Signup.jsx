@@ -1,51 +1,159 @@
 import React, { useState } from 'react';
-import { Button, TextField, Typography, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
-  const [role, setRole] = useState('user'); // default role is user
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
-  const handleRoleChange = (event) => {
-    setRole(event.target.value);
+  const validate = () => {
+    let newErrors = {};
+    
+    // Name validation
+    if (!formData.name) {
+      newErrors.name = 'Name is required';
+    } else if (formData.name.length < 3) {
+      newErrors.name = 'Name must be at least 3 characters long';
+    }
+
+    // Email validation
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email address is invalid';
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    // Confirm password validation
+    if (formData.confirmPassword !== formData.password) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validate()) return; // Prevent form submission if validation fails
+
+    try {
+      // API call for signup
+      const response = await fetch('https://your-api-url/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        // Handle successful signup, e.g., navigate to login or dashboard
+        navigate('/login');
+      } else {
+        // Handle server validation errors or other responses
+        const data = await response.json();
+        setErrors({ serverError: data.message });
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      setErrors({ serverError: 'Something went wrong. Please try again.' });
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-600 to-black">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <Typography variant="h4" className="mb-4 text-center text-blue-600">Sign Up</Typography>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="max-w-md w-full bg-white shadow-md rounded-lg p-6">
+        <h2 className="text-2xl font-bold text-center mb-6">Signup</h2>
+        <form onSubmit={handleSubmit}>
+          {/* Name Input */}
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Name</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className={`shadow appearance-none border ${errors.name ? 'border-red-500' : ''} rounded w-full py-2 px-3 text-gray-700`}
+              placeholder="Enter your name"
+            />
+            {errors.name && <p className="text-red-500 text-xs italic">{errors.name}</p>}
+          </div>
 
-        <form className="space-y-4">
-          <TextField fullWidth label="Name" variant="outlined" />
-          <TextField fullWidth label="Email" variant="outlined" />
-          <TextField fullWidth label="Password" type="password" variant="outlined" />
+          {/* Email Input */}
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={`shadow appearance-none border ${errors.email ? 'border-red-500' : ''} rounded w-full py-2 px-3 text-gray-700`}
+              placeholder="Enter your email"
+            />
+            {errors.email && <p className="text-red-500 text-xs italic">{errors.email}</p>}
+          </div>
 
-          {/* Role Selection Dropdown */}
-          <FormControl fullWidth>
-            <InputLabel id="role-select-label">Select Role</InputLabel>
-            <Select
-              labelId="role-select-label"
-              id="role-select"
-              value={role}
-              label="Select Role"
-              onChange={handleRoleChange}
+          {/* Password Input */}
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={`shadow appearance-none border ${errors.password ? 'border-red-500' : ''} rounded w-full py-2 px-3 text-gray-700`}
+              placeholder="Enter your password"
+            />
+            {errors.password && <p className="text-red-500 text-xs italic">{errors.password}</p>}
+          </div>
+
+          {/* Confirm Password Input */}
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Confirm Password</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className={`shadow appearance-none border ${errors.confirmPassword ? 'border-red-500' : ''} rounded w-full py-2 px-3 text-gray-700`}
+              placeholder="Confirm your password"
+            />
+            {errors.confirmPassword && <p className="text-red-500 text-xs italic">{errors.confirmPassword}</p>}
+          </div>
+
+          {/* Server Error */}
+          {errors.serverError && (
+            <div className="mb-4 text-red-500 text-sm text-center">{errors.serverError}</div>
+          )}
+
+          {/* Submit Button */}
+          <div className="mb-6">
+            <button
+              type="submit"
+              className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             >
-              <MenuItem value="user">User</MenuItem>
-              <MenuItem value="admin">Admin</MenuItem>
-            </Select>
-          </FormControl>
-
-          <Button fullWidth variant="contained" color="primary">Sign Up</Button>
+              Sign Up
+            </button>
+          </div>
         </form>
-
-        <div className="mt-6 flex justify-between">
-          <Button color="primary" variant="text">Sign up with Google</Button>
-          <Button color="primary" variant="text">Sign up with GitHub</Button>
-          <Button color="primary" variant="text">Sign up with LinkedIn</Button>
-        </div>
-
-        <div className="mt-4 text-center">
-          <Typography>Already have an account?<Link to="/login" className='text-blue-600'> Login</Link></Typography>
-        </div>
+        <p className="text-center text-gray-600 text-sm">
+          Already have an account? <a href="/login" className="text-blue-500 hover:text-blue-700">Login</a>
+        </p>
       </div>
     </div>
   );
