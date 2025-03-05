@@ -1,4 +1,3 @@
-// passport.js
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GitHubStrategy = require('passport-github').Strategy;
@@ -17,6 +16,7 @@ passport.use(new GoogleStrategy({
       if (!user) {
         user = new User({
           googleId: profile.id,
+          name: profile.displayName || 'Google User', // Fallback to 'Google User' if no displayName
           email: profile.emails[0].value,
           role: 'user',
         });
@@ -41,6 +41,7 @@ passport.use(new GitHubStrategy({
       if (!user) {
         user = new User({
           githubId: profile.id,
+          name: profile.displayName || 'GitHub User', // Fallback to 'GitHub User'
           email: profile.emails[0].value,
           role: 'user',
         });
@@ -66,6 +67,7 @@ passport.use(new LinkedInStrategy({
       if (!user) {
         user = new User({
           linkedinId: profile.id,
+          name: profile.displayName || 'LinkedIn User', // Fallback to 'LinkedIn User'
           email: profile.emails[0].value,
           role: 'user',
         });
