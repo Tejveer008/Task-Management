@@ -1,14 +1,12 @@
 const mongoose = require('mongoose');
-require('dotenv').config(); // Make sure to load environment variables
+require('dotenv').config(); // Load environment variables
 
 const mongo_url = process.env.MONGO_URL;
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(mongo_url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // No options are needed for Mongoose v6+ 
+    await mongoose.connect(mongo_url);
     console.log('MongoDB Connected...');
   } catch (err) {
     console.error('MongoDB Connection Error:', err);

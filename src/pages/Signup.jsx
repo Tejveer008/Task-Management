@@ -6,7 +6,8 @@ const Signup = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'user' // Default role
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ const Signup = () => {
 
     try {
       // API call for signup
-      const response = await fetch('https://your-api-url/signup', {
+      const response = await fetch('https://task-management-jet-omega.vercel.app/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -134,6 +135,20 @@ const Signup = () => {
               placeholder="Confirm your password"
             />
             {errors.confirmPassword && <p className="text-red-500 text-xs italic">{errors.confirmPassword}</p>}
+          </div>
+
+          {/* Role Input */}
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Role</label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
 
           {/* Server Error */}

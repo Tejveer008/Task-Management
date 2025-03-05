@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 
-const ensureAuthenticated = (req, res, next) => {
+// Role-based access middleware
+const ensureAuthenticated = (roles = []) => (req, res, next) => {
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
         return res.status(401) // Unauthorized
@@ -16,8 +17,17 @@ const ensureAuthenticated = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded; // Attach decoded token data to request object
+
+        // Check if user has required role(s)
+        if (roles.length && !roles.includes(req.user.role)) {
+            return res.status(403).json({
+                message: 'Access denied, insufficient permissions',
+            });
+        }
+
         next();
     } catch (err) {
+        console.error('JWT verification failed:', err);
         return res.status(401)
             .json({ message: 'Unauthorized, JWT token is invalid or expired' });
     }

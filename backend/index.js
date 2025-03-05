@@ -6,9 +6,10 @@ const MongoStore = require('connect-mongo'); // To store sessions in MongoDB
 const connectDB = require('./Models/db');
 const AuthRouter = require('./routes/authRoutes');
 const passport = require('passport');
-
-// require('./config/passport'); // Include passport strategies
 require('dotenv').config(); // Load environment variables
+
+// Import Passport strategies
+require('./config/passport'); // Ensure the passport.js file is required here
 
 const PORT = process.env.PORT || 8080;
 const SESSION_SECRET = process.env.SESSION_SECRET || '111'; // Use a strong secret key

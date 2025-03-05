@@ -1,13 +1,29 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const UserModel = require('../Models/User');
+const validator = require('validator');
 
 // Signup
 const signup = async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;  // Include role in the request body
-        const user = await UserModel.findOne({ email });
+        const { name, email, password, role } = req.body;
 
+        // Input validation
+        if (!validator.isEmail(email)) {
+            return res.status(400).json({
+                message: 'Invalid email format',
+                success: false
+            });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({
+                message: 'Password must be at least 6 characters',
+                success: false
+            });
+        }
+
+        const user = await UserModel.findOne({ email });
         if (user) {
             return res.status(409).json({
                 message: 'User already exists, please login',
@@ -25,6 +41,7 @@ const signup = async (req, res) => {
             success: true
         });
     } catch (err) {
+        console.error(err);
         res.status(500).json({
             message: 'Internal server error',
             success: false
@@ -36,9 +53,9 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await UserModel.findOne({ email });
         const errorMsg = 'Auth failed, email or password is incorrect';
 
+        const user = await UserModel.findOne({ email });
         if (!user) {
             return res.status(403).json({
                 message: errorMsg,
@@ -70,6 +87,7 @@ const login = async (req, res) => {
             role: user.role  // Send role to the frontend
         });
     } catch (err) {
+        console.error(err);
         res.status(500).json({
             message: 'Internal server error',
             success: false

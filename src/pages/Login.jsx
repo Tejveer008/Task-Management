@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, TextField, Typography, MenuItem, Select, InputLabel, FormControl, IconButton, InputAdornment, Box } from '@mui/material';
 import { GitHub, Google, LinkedIn, Visibility, VisibilityOff } from '@mui/icons-material'; 
 import { Link, useNavigate } from 'react-router-dom';
@@ -14,6 +14,24 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false); 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Check if redirected from OAuth callback with token and role
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const role = params.get('role');
+
+    if (token && role) {
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+
+      if (role === 'admin') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/user-dashboard');
+      }
+    }
+  }, [navigate]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setLoginInfo((prev) => ({ ...prev, [name]: value }));
@@ -28,7 +46,7 @@ const Login = () => {
     }
     
     try {
-      const url = `https://deploy-mern-app-1-api.vercel.app/auth/login`;
+      const url = `https://task-management-jet-omega.vercel.app/`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -132,27 +150,26 @@ const Login = () => {
 
         {/* OAuth Buttons */}
         <div className="mt-6 flex justify-between space-x-2">
-        <Box className="flex flex-col items-center">
-  <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/google'}>
-    <Google fontSize="large" />
-  </IconButton>
-  <Typography variant="body2">Login with Google</Typography>
-</Box>
+          <Box className="flex flex-col items-center">
+            <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/google'}>
+              <Google fontSize="large" />
+            </IconButton>
+            <Typography variant="body2">Login with Google</Typography>
+          </Box>
 
-<Box className="flex flex-col items-center">
-  <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/github'}>
-    <GitHub fontSize="large" />
-  </IconButton>
-  <Typography variant="body2">Login with GitHub</Typography>
-</Box>
+          <Box className="flex flex-col items-center">
+            <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/github'}>
+              <GitHub fontSize="large" />
+            </IconButton>
+            <Typography variant="body2">Login with GitHub</Typography>
+          </Box>
 
-<Box className="flex flex-col items-center">
-  <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/linkedin'}>
-    <LinkedIn fontSize="large" />
-  </IconButton>
-  <Typography variant="body2">Login with LinkedIn</Typography>
-</Box>
-
+          <Box className="flex flex-col items-center">
+            <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/linkedin'}>
+              <LinkedIn fontSize="large" />
+            </IconButton>
+            <Typography variant="body2">Login with LinkedIn</Typography>
+          </Box>
         </div>
       </div>
     </div>
