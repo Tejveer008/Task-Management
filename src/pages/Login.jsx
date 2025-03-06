@@ -145,7 +145,7 @@ const Login = () => {
         <ToastContainer />
 
         <div className="mt-4 text-center">
-          <Typography>Don't have an account? <Link to="/signup" className='text-blue-600'>Sign up</Link></Typography>
+          <Typography>Don't have an account? <Link to='/signup' className='text-blue-600'>Sign up</Link></Typography>
         </div>
 
         {/* OAuth Buttons */}
