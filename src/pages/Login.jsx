@@ -151,21 +151,21 @@ const Login = () => {
         {/* OAuth Buttons */}
         <div className="mt-6 flex justify-between space-x-2">
           <Box className="flex flex-col items-center">
-            <IconButton color="primary" onClick={() => window.location.href = 'https://task-management-jet-omega.vercel.app/auth/google'}>
+            <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/google'}>
               <Google fontSize="large" />
             </IconButton>
             <Typography variant="body2">Login with Google</Typography>
           </Box>
 
           <Box className="flex flex-col items-center">
-            <IconButton color="primary" onClick={() => window.location.href = 'https://task-management-jet-omega.vercel.app/auth/github'}>
+            <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/github'}>
               <GitHub fontSize="large" />
             </IconButton>
             <Typography variant="body2">Login with GitHub</Typography>
           </Box>
 
           <Box className="flex flex-col items-center">
-            <IconButton color="primary" onClick={() => window.location.href = 'https://task-management-jet-omega.vercel.app/auth/linkedin'}>
+            <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/linkedin'}>
               <LinkedIn fontSize="large" />
             </IconButton>
             <Typography variant="body2">Login with LinkedIn</Typography>

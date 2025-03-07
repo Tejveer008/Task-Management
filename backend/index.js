@@ -7,7 +7,6 @@ const connectDB = require('./Models/db');
 const AuthRouter = require('./routes/authRoutes');
 const passport = require('passport');
 require('dotenv').config(); // Load environment variables
-
 // Import Passport strategies
 require('./config/passport'); // Ensure the passport.js file is required here
 
