@@ -8,7 +8,7 @@ const User = require('../Models/User'); // Your User model
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: '/auth/google/callback'
+    callbackURL: 'auth/google/callback'
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
@@ -33,7 +33,7 @@ passport.use(new GoogleStrategy({
 passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: '/auth/github/callback'
+    callbackURL: 'auth/github/callback'
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
@@ -58,7 +58,7 @@ passport.use(new GitHubStrategy({
 passport.use(new LinkedInStrategy({
     clientID: process.env.LINKEDIN_CLIENT_ID,
     clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-    callbackURL: '/auth/linkedin/callback',
+    callbackURL: 'auth/linkedin/callback',
     scope: ['r_emailaddress', 'r_liteprofile'],
   },
   async (accessToken, refreshToken, profile, done) => {

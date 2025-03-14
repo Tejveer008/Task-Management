@@ -1,88 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { Button, TextField, Typography, MenuItem, Select, InputLabel, FormControl, IconButton, InputAdornment, Box } from '@mui/material';
-import { GitHub, Google, LinkedIn, Visibility, VisibilityOff } from '@mui/icons-material'; 
-import { Link, useNavigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import { handleError, handleSuccess } from '../utils';
+import React, { useState } from "react";
+import {
+  Button,
+  TextField,
+  Typography,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  IconButton,
+  InputAdornment,
+  Box,
+} from "@mui/material";
+import { GitHub, Google, LinkedIn, Visibility, VisibilityOff } from "@mui/icons-material";
+import { Link, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+// Dummy credentials for login
+const dummyUsers = {
+  admin: { email: "admin@example.com", password: "admin123", role: "admin" },
+  user: { email: "user@example.com", password: "user123", role: "user" },
+};
 
 const Login = () => {
-  const [role, setRole] = useState('user'); // default role is user
-  const [loginInfo, setLoginInfo] = useState({
-    email: '',
-    password: '',
-  });
-  const [showPassword, setShowPassword] = useState(false); 
+  const [role, setRole] = useState("user"); // Default role is user
+  const [loginInfo, setLoginInfo] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Check if redirected from OAuth callback with token and role
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    const role = params.get('role');
-
-    if (token && role) {
-      localStorage.setItem('token', token);
-      localStorage.setItem('role', role);
-
-      if (role === 'admin') {
-        navigate('/admin-dashboard');
-      } else {
-        navigate('/user-dashboard');
-      }
-    }
-  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setLoginInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
     const { email, password } = loginInfo;
-    
-    if (!email || !password) {
-      return handleError('Email and password are required');
+    const validUser = dummyUsers[role];
+
+    if (email === validUser.email && password === validUser.password) {
+      // Store login state in localStorage
+      localStorage.setItem("loggedInUser", JSON.stringify(validUser));
+
+      toast.success("Login successful!", { position: "top-center" });
+
+      setTimeout(() => {
+        navigate(role === "admin" ? "/admin-dashboard" : "/user-dashboard");
+      }, 1000);
+    } else {
+      toast.error("Invalid email or password!", { position: "top-center" });
     }
-    
-    try {
-      const url = `https://task-management-jet-omega.vercel.app/`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...loginInfo, role }), // Include role in the request
-      });
-
-      const result = await response.json();
-      const { success, message, jwtToken, name, error } = result;
-
-      if (success) {
-        handleSuccess(message);
-        localStorage.setItem('token', jwtToken);
-        localStorage.setItem('loggedInUser', name);
-        setTimeout(() => {
-          // Redirect based on role
-          if (role === 'admin') {
-            navigate('/admin-dashboard');
-          } else {
-            navigate('/user-dashboard');
-          }
-        }, 1000);
-      } else if (error) {
-        const details = error?.details[0]?.message || 'An error occurred';
-        handleError(details);
-      } else {
-        handleError(message);
-      }
-    } catch (err) {
-      handleError(err.message || 'An error occurred');
-    }
-  };
-
-  const handleClickShowPassword = () => {
-    setShowPassword((prev) => !prev); // Toggle password visibility
   };
 
   return (
@@ -100,12 +67,12 @@ const Login = () => {
             value={loginInfo.email}
             onChange={handleChange}
           />
-          
+
           {/* Password Field with Show/Hide Option */}
           <TextField
             fullWidth
             label="Password"
-            type={showPassword ? 'text' : 'password'} 
+            type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             variant="outlined"
             name="password"
@@ -114,7 +81,7 @@ const Login = () => {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={handleClickShowPassword} edge="end">
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
@@ -127,9 +94,7 @@ const Login = () => {
             <InputLabel id="role-select-label">Select Role</InputLabel>
             <Select
               labelId="role-select-label"
-              id="role-select"
               value={role}
-              label="Select Role"
               onChange={(e) => setRole(e.target.value)}
             >
               <MenuItem value="user">User</MenuItem>
@@ -137,7 +102,7 @@ const Login = () => {
             </Select>
           </FormControl>
 
-          <Button fullWidth variant="contained" color="primary" className="mt-6" type="submit">
+          <Button fullWidth variant="contained" color="primary" type="submit">
             Login
           </Button>
         </form>
@@ -145,31 +110,9 @@ const Login = () => {
         <ToastContainer />
 
         <div className="mt-4 text-center">
-          <Typography>Don't have an account? <Link to='/signup' className='text-blue-600'>Sign up</Link></Typography>
-        </div>
-
-        {/* OAuth Buttons */}
-        <div className="mt-6 flex justify-between space-x-2">
-          <Box className="flex flex-col items-center">
-            <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/google'}>
-              <Google fontSize="large" />
-            </IconButton>
-            <Typography variant="body2">Login with Google</Typography>
-          </Box>
-
-          <Box className="flex flex-col items-center">
-            <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/github'}>
-              <GitHub fontSize="large" />
-            </IconButton>
-            <Typography variant="body2">Login with GitHub</Typography>
-          </Box>
-
-          <Box className="flex flex-col items-center">
-            <IconButton color="primary" onClick={() => window.location.href = 'http://localhost:8080/auth/linkedin'}>
-              <LinkedIn fontSize="large" />
-            </IconButton>
-            <Typography variant="body2">Login with LinkedIn</Typography>
-          </Box>
+          <Typography>
+            Don't have an account? <Link to="/signup" className="text-blue-600">Sign up</Link>
+          </Typography>
         </div>
       </div>
     </div>

@@ -9,8 +9,15 @@ const UserSchema = new Schema({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        validate: {
+            validator: function(v) {
+                return /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/.test(v); // Basic email regex
+            },
+            message: props => `${props.value} is not a valid email address!`
+        }
     },
+    
     password: {
         type: String,
         required: false, // Optional, because OAuth users won't have passwords
@@ -38,6 +45,6 @@ const UserSchema = new Schema({
 });
 
 // Create the model based on the schema
-const UserModel = mongoose.model('user', UserSchema);
+const UserModel = mongoose.model('users', UserSchema);
 
 module.exports = UserModel;

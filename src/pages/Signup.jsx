@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -7,14 +9,14 @@ const Signup = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'user' // Default role
+    role: 'user', // Default role
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const validate = () => {
     let newErrors = {};
-    
+
     // Name validation
     if (!formData.name) {
       newErrors.name = 'Name is required';
@@ -45,31 +47,34 @@ const Signup = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!validate()) return; // Prevent form submission if validation fails
 
-    try {
-      // API call for signup
-      const response = await fetch('https://task-management-jet-omega.vercel.app/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+    // Get stored users from localStorage
+    const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
 
-      if (response.ok) {
-        // Handle successful signup, e.g., navigate to login or dashboard
-        navigate('/login');
-      } else {
-        // Handle server validation errors or other responses
-        const data = await response.json();
-        setErrors({ serverError: data.message });
-      }
-    } catch (error) {
-      console.error('Signup error:', error);
-      setErrors({ serverError: 'Something went wrong. Please try again.' });
+    // Check if email already exists
+    if (storedUsers.some(user => user.email === formData.email)) {
+      toast.error("Email already exists. Try logging in!", { position: "top-center" });
+      return;
     }
+
+    // Save user to localStorage
+    storedUsers.push({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      role: formData.role
+    });
+    localStorage.setItem("users", JSON.stringify(storedUsers));
+
+    toast.success("Signup successful! Redirecting to login...", { position: "top-center" });
+
+    setTimeout(() => {
+      navigate('/login'); // Redirect to login after signup
+    }, 1500);
   };
 
   const handleChange = (e) => {
@@ -80,6 +85,7 @@ const Signup = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="max-w-md w-full bg-white shadow-md rounded-lg p-6">
         <h2 className="text-2xl font-bold text-center mb-6">Signup</h2>
+        
         <form onSubmit={handleSubmit}>
           {/* Name Input */}
           <div className="mb-4">
@@ -151,11 +157,6 @@ const Signup = () => {
             </select>
           </div>
 
-          {/* Server Error */}
-          {errors.serverError && (
-            <div className="mb-4 text-red-500 text-sm text-center">{errors.serverError}</div>
-          )}
-
           {/* Submit Button */}
           <div className="mb-6">
             <button
@@ -166,8 +167,13 @@ const Signup = () => {
             </button>
           </div>
         </form>
+
+        {/* Toast Notifications */}
+        <ToastContainer />
+
+        {/* Redirect to Login */}
         <p className="text-center text-gray-600 text-sm">
-          Already have an account? <Link to="/login" className='text-blue-600'>Login</Link>
+          Already have an account? <Link to="/login" className="text-blue-600">Login</Link>
         </p>
       </div>
     </div>
