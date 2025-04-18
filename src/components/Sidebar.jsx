@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import HomeIcon from "@mui/icons-material/Home";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -7,22 +7,24 @@ import { useNavigate } from "react-router-dom";
 
 const Sidebar = ({ toggleSettings }) => {
   const navigate = useNavigate();
-  const [role] = useState(() => {
-    const isAdmin = false; // Replace with actual logic
-    return isAdmin ? "admin" : "user";
-  });
+  const [role, setRole] = useState("user"); // Default role
+
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (loggedInUser && loggedInUser.role) {
+      setRole(loggedInUser.role);
+    }
+  }, []);
 
   return (
-    <div className="w-16 h-screen  bg-blue-100 border-r-2 flex flex-col justify-between items-center py-10 px-3.5">
+    <div className="w-16 h-screen bg-blue-100 border-r-2 flex flex-col justify-between items-center py-10 px-3.5">
       <div>
         <HomeIcon
           color="primary"
           fontSize="large"
           className="my-12 cursor-pointer"
-          onClick={
-            role === "admin"
-              ? () => navigate("/admin-dashboard")
-              : () => navigate("/user-dashboard")
+          onClick={() =>
+            navigate(role === "admin" ? "/admin-dashboard" : "/user-dashboard")
           }
         />
         <MailIcon
@@ -31,7 +33,6 @@ const Sidebar = ({ toggleSettings }) => {
           className="cursor-pointer"
           onClick={() => navigate("/client-messages")}
         />
-        {/* Open settings panel */}
         <SettingsIcon
           color="primary"
           fontSize="large"

@@ -1,27 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminProjectCard from '../components/AdminProjectCard'; // Import the AdminProjectCard component
 
 const AdminDashboard = () => {
-  // Initial state for existing projects
-  const [projects, setProjects] = useState([
-    { userName: 'sam', progress: 30, dueDate: '3 Weeks', statusColor: 'yellow' },
-    { userName: 'john', progress: 50, dueDate: '1 Week', statusColor: 'green' },
-    { userName: 'nick', progress: 90, dueDate: '2 Days', statusColor: 'blue' },
-    { userName: 'nancy', progress: 50, dueDate: '1 Week', statusColor: 'green' },
-    { userName: 'rick', progress: 50, dueDate: '1 Week', statusColor: 'green' },
-    { userName: 'richrd', progress: 50, dueDate: '1 Week', statusColor: 'green' },
-    { userName: 'om', progress: 50, dueDate: '1 Week', statusColor: 'green' },
-    { userName: 'jee', progress: 50, dueDate: '1 Week', statusColor: 'green' },
-  ]);
-
-  // States for the form inputs
+  // States for existing projects, form inputs, and error handling
+  const [projects, setProjects] = useState([]);
   const [newTask, setNewTask] = useState('');
   const [assignedUser, setAssignedUser] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [progress, setProgress] = useState(0);
+  const [error, setError] = useState('');
+  const [users, setUsers] = useState([]); // New state to store list of users
+
+  // Fetch projects and users from backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [projectsResponse, usersResponse] = await Promise.all([
+          fetch('http://localhost:8080/api/projects'), // Endpoint to fetch projects
+          fetch('http://localhost:8080/api/users'),    // Endpoint to fetch users
+        ]);
+        
+        const projectsData = await projectsResponse.json();
+        const usersData = await usersResponse.json();
+
+        setProjects(projectsData.projects); // Assuming the backend sends a list of projects under 'projects'
+        setUsers(usersData.users); // Assuming the backend sends a list of users under 'users'
+      } catch (err) {
+        setError('Error fetching data');
+      }
+    };
+    fetchData();
+  }, []);
 
   // Function to handle task creation
-  const handleCreateTask = () => {
+  const handleCreateTask = async () => {
     if (newTask && assignedUser && dueDate) {
       const newProject = {
         userName: assignedUser,
@@ -30,10 +42,28 @@ const AdminDashboard = () => {
         statusColor: 'blue', // Default color for new tasks
       };
 
-      // Add the new project to the list
-      setProjects([...projects, newProject]);
+      try {
+        // Send POST request to backend to create a new project
+        const response = await fetch('http://localhost:8080/api/projects', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newProject),
+        });
 
-      // Reset the form fields
+        if (response.ok) {
+          // If the task is created successfully, refresh the project list
+          const updatedProjects = await response.json();
+          setProjects(updatedProjects.projects); // Assuming response returns updated project list
+        } else {
+          throw new Error('Failed to create task');
+        }
+      } catch (err) {
+        setError('Error creating task');
+      }
+
+      // Reset form fields after creating the task
       setNewTask('');
       setAssignedUser('');
       setDueDate('');
@@ -58,16 +88,24 @@ const AdminDashboard = () => {
                 placeholder="Enter task name"
               />
             </div>
+
+            {/* Assign to User - Dropdown */}
             <div>
               <label className="block text-sm font-medium mb-1">Assign to User</label>
-              <input
-                type="text"
+              <select
                 value={assignedUser}
                 onChange={(e) => setAssignedUser(e.target.value)}
                 className="w-full border p-2 rounded-lg"
-                placeholder="Enter user name"
-              />
+              >
+                <option value="">Select User</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.name}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-1">Due Date</label>
               <input
@@ -96,6 +134,9 @@ const AdminDashboard = () => {
           </button>
         </div>
 
+        {/* Error Handling */}
+        {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+
         {/* Projects Section */}
         <h2 className="font-bold text-2xl mb-6">User Projects</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -104,7 +145,7 @@ const AdminDashboard = () => {
               key={index}
               userName={project.userName}
               userProgress={project.progress}
-              task="Assigned Task Name" // You can customize this as needed
+              task="Assigned Task Name" // Customize as needed
               taskDueDate={project.dueDate}
             />
           ))}
