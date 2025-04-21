@@ -134,7 +134,7 @@ const AdminDashboard = () => {
             <select value={assignedUser} onChange={(e) => setAssignedUser(e.target.value)} className="border p-2 rounded-lg">
               <option value="">Assign User</option>
               {users.map((user) => (
-                <option key={user._id || user.id} value={user.name}>{user.name}</option>
+                <option key={user._id || user.id} value={user.username}>{user.username}</option>
               ))}
             </select>
             <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="border p-2 rounded-lg" />
