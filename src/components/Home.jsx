@@ -21,7 +21,7 @@ const Home = () => {
         </div>
 
         {/* Auth Buttons */}
-        <div className="flex space-x-4">
+        <div className="flex space space-x-4">
           <Button component={Link} to="/login" variant="outlined" color="primary">
             Sign In
           </Button>

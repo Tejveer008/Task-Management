@@ -1,36 +1,70 @@
 import React from 'react';
 
-const AdminProjectCard = ({ userName, task, userProgress, taskDueDate, status }) => {
-  // Conditional color for progress based on status
-  const getStatusColor = (status) => {
-    if (status === 'Completed') return 'bg-green-500';
-    if (status === 'In Progress') return 'bg-yellow-500';
-    return 'bg-gray-500'; // Default color for other statuses
-  };
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'To-Do':
+      return 'bg-gray-400';
+    case 'Active':
+      return 'bg-yellow-400';
+    case 'Completed':
+      return 'bg-green-500';
+    default:
+      return 'bg-gray-200';
+  }
+};
 
+const getPriorityColor = (priority) => {
+  switch (priority) {
+    case 'High':
+      return 'text-red-600';
+    case 'Medium':
+      return 'text-yellow-600';
+    case 'Low':
+      return 'text-blue-600';
+    default:
+      return 'text-gray-600';
+  }
+};
+
+const AdminProjectCard = ({
+  userName,
+  task,
+  userProgress,
+  taskDueDate,
+  status,
+  priority,
+  attachmentUrl,
+  onEdit,
+  onDelete,
+}) => {
   return (
-    <div className="flex flex-col justify-between items-center bg-gray-800 text-white shadow-lg rounded-lg p-6 w-full sm:w-80">
-      <div className="mb-4">
-        <h3 className="text-lg font-bold">Assigned to: {userName}</h3>
-        <p className="text-sm">Task: {task}</p>
-        <p className="text-sm text-gray-400">Status: <span className={`${getStatusColor(status)} px-2 py-1 rounded-full text-xs`}>{status}</span></p>
+    <div className="bg-white rounded-xl shadow-md p-4 space-y-3">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-bold">{task}</h3>
+        <span className={`${getStatusColor(status)} px-2 py-1 rounded-full text-xs text-white`}>
+          {status}
+        </span>
       </div>
-
-      <div className="flex items-center justify-between mb-4 w-full">
+      <p className="text-sm text-gray-500">Assigned to: <strong>{userName}</strong></p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm">Due: {new Date(taskDueDate).toLocaleDateString()}</p>
+        <p className={`text-sm font-semibold ${getPriorityColor(priority)}`}>
+          {priority} Priority
+        </p>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className={`h-2 rounded-full ${getStatusColor(status)}`} style={{ width: `${userProgress}%` }}></div>
+      </div>
+      {attachmentUrl && (
         <div>
-          <p className="text-sm">Due: {taskDueDate}</p>
+          <a href={attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-sm">
+            View Attachment
+          </a>
         </div>
-      </div>
-
-      <div className="h-2 w-full bg-gray-200 rounded-full mb-4">
-        <div
-          className={`h-2 rounded-full ${getStatusColor(status)}`}
-          style={{ width: `${userProgress}%` }}
-        ></div>
-      </div>
-
-      <div className="text-right">
-        <p className="text-sm font-semibold">{userProgress}% User Progress</p>
+      )}
+      <div className="flex justify-between mt-2">
+        <button onClick={onEdit} className="text-blue-500 hover:underline text-sm">Edit</button>
+        <button onClick={onDelete} className="text-red-500 hover:underline text-sm">Delete</button>
       </div>
     </div>
   );
