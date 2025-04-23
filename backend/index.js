@@ -5,7 +5,13 @@ const connectDB = require("./config/connectDB");
 const authRoutes = require("./routes/authRoutes");
 const projectRoutes = require("./routes/projectRoutes"); // ✅ new
 const userRoutes = require('./routes/userRoutes'); // adjust path
+const path = require('path');
 
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
 
 dotenv.config();
 const app = express();
