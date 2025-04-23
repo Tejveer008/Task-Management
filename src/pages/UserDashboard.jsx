@@ -9,7 +9,7 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/tasks'); // Endpoint to fetch tasks
+        const response = await fetch('http://localhost:8080/api/project'); // Endpoint to fetch tasks
         if (!response.ok) throw new Error('Failed to fetch tasks');
         const data = await response.json();
         setTasks(data.tasks); // Assuming backend sends tasks under 'tasks'
