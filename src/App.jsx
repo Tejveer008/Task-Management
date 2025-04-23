@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import UserDashboard from "./pages/UserDashboard";
@@ -27,13 +28,11 @@ function App() {
   const [role, setRole] = useState(getUserRole());
 
   useEffect(() => {
-    // Function to update authentication and role
     const updateAuthState = () => {
       setAuthenticated(isAuthenticated());
       setRole(getUserRole());
     };
 
-    // Listen for login/logout updates
     window.addEventListener("storage", updateAuthState);
     return () => window.removeEventListener("storage", updateAuthState);
   }, []);
@@ -43,42 +42,57 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Login and Signup Routes */}
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Protected Section (Sidebar + Main Content) */}
+        {/* Protected Layout Route */}
         {authenticated ? (
           <Route
             path="/*"
             element={
               <div className="flex h-screen">
-                {/* Sidebar remains fixed */}
                 <Sidebar toggleSettings={toggleSettings} />
-
-                {/* Dynamic Content Area */}
                 <div className="flex-grow p-6 overflow-y-auto">
                   <Routes>
-                    {/* Role-Based Dashboards */}
-                    <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                    <Route path="/user-dashboard" element={<UserDashboard />} />
-
-                    {/* Other Pages */}
-                    <Route path="/client-messages" element={<ClientMessages />} />
-                    <Route path="/teamCollaboration" element={<TeamCollaboration role={role} />} />
-
-                    {/* Redirect to correct dashboard based on role */}
-                    <Route path="*" element={<Navigate to={role === "admin" ? "/admin-dashboard" : "/user-dashboard"} replace />} />
+                    <Route
+                      path="/admin-dashboard"
+                      element={<AdminDashboard />}
+                    />
+                    <Route
+                      path="/user-dashboard"
+                      element={<UserDashboard />}
+                    />
+                    <Route
+                      path="/client-messages"
+                      element={<ClientMessages />}
+                    />
+                    <Route
+                      path="/teamCollaboration"
+                      element={<TeamCollaboration role={role} />}
+                    />
+                    <Route
+                      path="*"
+                      element={
+                        <Navigate
+                          to={
+                            role === "admin"
+                              ? "/admin-dashboard"
+                              : "/user-dashboard"
+                          }
+                          replace
+                        />
+                      }
+                    />
                   </Routes>
                 </div>
-
-                {/* Settings Panel */}
                 {showSettings && <Settings closeSettings={toggleSettings} />}
               </div>
             }
           />
         ) : (
+          // Redirect unknown routes to login if not authenticated
           <Route path="*" element={<Navigate to="/login" replace />} />
         )}
       </Routes>

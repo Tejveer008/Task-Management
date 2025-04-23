@@ -15,13 +15,13 @@ const Home = () => {
         {/* Navigation */}
         <div className="flex space-x-6">
           <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium">Home</Link>
-          <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium">About</Link>
-          <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium">Services</Link>
-          <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium">Contact</Link>
+          <Link to="https://zidio.in/about.html" className="text-gray-700 hover:text-blue-600 font-medium">About</Link>
+          <Link to="https://zidio.in/services.html" className="text-gray-700 hover:text-blue-600 font-medium">Services</Link>
+          <Link to="https://zidio.in/contact.html" className="text-gray-700 hover:text-blue-600 font-medium">Contact</Link>
         </div>
 
         {/* Auth Buttons */}
-        <div className="flex space-x-4">
+        <div className="flex space space-x-4">
           <Button component={Link} to="/login" variant="outlined" color="primary">
             Sign In
           </Button>

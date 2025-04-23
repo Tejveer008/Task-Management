@@ -8,13 +8,22 @@ const UserProjectCard = ({ title, progress, status, priority, dueDate, statusCol
     Low: 'bg-green-500',
   };
 
+  // Dynamic background color for the status
+  const statusColors = {
+    Completed: 'bg-green-500',
+    'In Progress': 'bg-yellow-500',
+    'To Do': 'bg-gray-500',
+  };
+
   return (
-    <div className="bg-white shadow-lg rounded-lg p-6">
+    <div className="bg-white shadow-lg rounded-lg p-6 w-full sm:w-80">
       <div className="mb-4">
         <h3 className="text-lg font-bold">{title}</h3>
-        <p className={`text-sm text-${statusColor}-600`}>{status}</p>
+        <p className={`text-sm ${statusColors[status]} text-white px-2 py-1 rounded-full`}>
+          {status}
+        </p>
       </div>
-      
+
       <div className="flex items-center justify-between mb-4">
         <div>
           <span className={`px-3 py-1 text-white rounded ${priorityColors[priority]}`}>
@@ -28,8 +37,11 @@ const UserProjectCard = ({ title, progress, status, priority, dueDate, statusCol
 
       <div className="h-2 w-full bg-gray-200 rounded-full mb-4">
         <div
-          className="bg-blue-500 h-2 rounded-full"
-          style={{ width: `${progress}%` }}
+          className="h-2 rounded-full"
+          style={{
+            width: `${progress}%`,
+            backgroundColor: progress === 100 ? 'green' : progress > 50 ? 'yellow' : 'blue',
+          }}
         ></div>
       </div>
 

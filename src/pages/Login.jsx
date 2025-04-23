@@ -11,16 +11,16 @@ import {
   InputAdornment,
   Box,
 } from "@mui/material";
-import { GitHub, Google, LinkedIn, Visibility, VisibilityOff } from "@mui/icons-material";
+import {
+  GitHub,
+  Google,
+  LinkedIn,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// Dummy credentials for login
-const dummyUsers = {
-  admin: { email: "admin@example.com", password: "admin123", role: "admin" },
-  user: { email: "user@example.com", password: "user123", role: "user" },
-};
 
 const Login = () => {
   const [role, setRole] = useState("user"); // Default role is user
@@ -33,29 +33,46 @@ const Login = () => {
     setLoginInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     const { email, password } = loginInfo;
-    const validUser = dummyUsers[role];
 
-    if (email === validUser.email && password === validUser.password) {
-      // Store login state in localStorage
-      localStorage.setItem("loggedInUser", JSON.stringify(validUser));
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role }),
+      });
 
-      toast.success("Login successful!", { position: "top-center" });
+      const data = await response.json();
 
-      setTimeout(() => {
-        navigate(role === "admin" ? "/admin-dashboard" : "/user-dashboard");
-      }, 1000);
-    } else {
-      toast.error("Invalid email or password!", { position: "top-center" });
+      if (response.ok) {
+        localStorage.setItem(
+          "loggedInUser",
+          JSON.stringify({ token: data.token, role: data.role })
+        );
+        window.dispatchEvent(new Event("storage"));
+        toast.success("Login successful!", { position: "top-center" });
+        setTimeout(() => {
+          navigate(role === "admin" ? "/admin-dashboard" : "/user-dashboard");
+        }, 1000);
+      } else {
+        toast.error(data.message || "Invalid email or password!", {
+          position: "top-center",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Login failed. Try again!", { position: "top-center" });
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-600 to-black">
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <Typography variant="h4" className="mb-4 text-center text-blue-600">Login</Typography>
+        <Typography variant="h4" className="mb-4 text-center text-blue-600">
+          Login
+        </Typography>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <TextField
@@ -68,7 +85,6 @@ const Login = () => {
             onChange={handleChange}
           />
 
-          {/* Password Field with Show/Hide Option */}
           <TextField
             fullWidth
             label="Password"
@@ -81,7 +97,10 @@ const Login = () => {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
@@ -89,7 +108,6 @@ const Login = () => {
             }}
           />
 
-          {/* Role Selection Dropdown */}
           <FormControl fullWidth>
             <InputLabel id="role-select-label">Select Role</InputLabel>
             <Select
@@ -111,7 +129,10 @@ const Login = () => {
 
         <div className="mt-4 text-center">
           <Typography>
-            Don't have an account? <Link to="/signup" className="text-blue-600">Sign up</Link>
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-blue-600">
+              Sign up
+            </Link>
           </Typography>
         </div>
       </div>
