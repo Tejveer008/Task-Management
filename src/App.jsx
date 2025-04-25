@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -10,13 +10,13 @@ import ClientMessages from "./components/ClientMessages";
 import Settings from "./components/Settings";
 import TeamCollaboration from "./components/TeamCollaboration";
 import Home from "./components/Home";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-// Function to check authentication
+// Utility functions
 const isAuthenticated = () => {
   return !!localStorage.getItem("loggedInUser");
 };
 
-// Function to get user role
 const getUserRole = () => {
   const user = JSON.parse(localStorage.getItem("loggedInUser"));
   return user ? user.role : null;
@@ -27,6 +27,7 @@ function App() {
   const [authenticated, setAuthenticated] = useState(isAuthenticated());
   const [role, setRole] = useState(getUserRole());
 
+  // Update auth state if changed in another tab or by navigation
   useEffect(() => {
     const updateAuthState = () => {
       setAuthenticated(isAuthenticated());
@@ -34,7 +35,12 @@ function App() {
     };
 
     window.addEventListener("storage", updateAuthState);
-    return () => window.removeEventListener("storage", updateAuthState);
+    window.addEventListener("popstate", updateAuthState);
+
+    return () => {
+      window.removeEventListener("storage", updateAuthState);
+      window.removeEventListener("popstate", updateAuthState);
+    };
   }, []);
 
   const toggleSettings = () => setShowSettings(!showSettings);
@@ -47,7 +53,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Protected Layout Route */}
+        {/* Protected Routes with Layout */}
         {authenticated ? (
           <Route
             path="/*"
@@ -58,19 +64,35 @@ function App() {
                   <Routes>
                     <Route
                       path="/admin-dashboard"
-                      element={<AdminDashboard />}
+                      element={
+                        <ProtectedRoute allowedRole="admin">
+                          <AdminDashboard />
+                        </ProtectedRoute>
+                      }
                     />
                     <Route
                       path="/user-dashboard"
-                      element={<UserDashboard />}
+                      element={
+                        <ProtectedRoute allowedRole="user">
+                          <UserDashboard />
+                        </ProtectedRoute>
+                      }
                     />
                     <Route
                       path="/client-messages"
-                      element={<ClientMessages />}
+                      element={
+                        <ProtectedRoute>
+                          <ClientMessages />
+                        </ProtectedRoute>
+                      }
                     />
                     <Route
                       path="/teamCollaboration"
-                      element={<TeamCollaboration role={role} />}
+                      element={
+                        <ProtectedRoute>
+                          <TeamCollaboration role={role} />
+                        </ProtectedRoute>
+                      }
                     />
                     <Route
                       path="*"
@@ -92,7 +114,6 @@ function App() {
             }
           />
         ) : (
-          // Redirect unknown routes to login if not authenticated
           <Route path="*" element={<Navigate to="/login" replace />} />
         )}
       </Routes>

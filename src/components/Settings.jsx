@@ -62,19 +62,19 @@ const Settings = ({ closeSettings, role, userName, avatar, jobTitle }) => {
 
       {/* Logout and Account Deletion */}
       <div className="p-4">
-        <Button variant="outlined" color="error" fullWidth>
-          Delete Account
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          className="mt-4"
-        >
-          <Link to="/login" className="text-white">
-            Logout
-          </Link>
-        </Button>
+      <Button
+  variant="contained"
+  color="primary"
+  fullWidth
+  className="mt-4"
+  onClick={() => {
+    localStorage.removeItem("loggedInUser");
+    window.location.href = "/login"; // force navigation
+  }}
+>
+  Logout
+</Button>
+
       </div>
     </div>
   );
