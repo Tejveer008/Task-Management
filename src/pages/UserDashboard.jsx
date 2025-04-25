@@ -3,48 +3,57 @@ import axios from "axios";
 import UserProjectCard from "../components/UserProjectCard";
 
 const UserDashboard = () => {
-  const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const localUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  const user = JSON.parse(localStorage.getItem("loggedInUser"));
 
-  // 1. Fetch full user data
-  const fetchUser = async () => {
+  const getUserProjects = async () => {
     try {
-      if (!localUser || !localUser._id) {
-        console.warn("No user ID found.");
+      if (!user || !user.email) {
+        console.warn("No user is logged in.");
         return;
       }
-
-      const res = await axios.get(`/api/users/${localUser._id}`);
-      setUser(res.data);
-    } catch (error) {
-      console.error("Failed to fetch user:", error);
-    }
-  };
-
-  // 2. Fetch tasks for the logged-in user
-  const getUserProjects = async (email) => {
-    try {
+  
       const res = await axios.get("/api/projects");
-
+  
       const userTasks = res.data.projects.filter(
-        (project) => project.assignedTo === email
+        (project) => project.assignedTo === user.email
       );
-
+  
+      // If no tasks are assigned, add some dummy projects
       if (userTasks.length === 0) {
-        userTasks.push({
-          _id: "dummy1",
-          task: "Complete onboarding document",
-          progress: 0,
-          dueDate: new Date().toISOString().split("T")[0],
-          priority: "Medium",
-          assignedBy: "Admin User",
-          assignedTo: email,
-        });
+        userTasks.push(
+          {
+            _id: "dummy1",
+            task: "Complete onboarding document",
+            progress: 0,
+            dueDate: new Date().toISOString().split("T")[0], // today's date
+            priority: "Medium",
+            assignedBy: "Admin User",
+            assignedTo: user.email,
+          },
+          {
+            _id: "dummy2",
+            task: "Review project proposal",
+            progress: 50,
+            dueDate: new Date().toISOString().split("T")[0],
+            priority: "High",
+            assignedBy: "Admin User",
+            assignedTo: user.email,
+          },
+          {
+            _id: "dummy3",
+            task: "Bug fixes in app",
+            progress: 20,
+            dueDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split("T")[0], // next week
+            priority: "Low",
+            assignedBy: "Admin User",
+            assignedTo: user.email,
+          }
+        );
       }
-
+  
       setProjects(userTasks);
     } catch (err) {
       console.error("Error fetching projects", err);
@@ -52,20 +61,11 @@ const UserDashboard = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
-    const loadData = async () => {
-      await fetchUser();
-    };
-
-    loadData();
+    getUserProjects();
   }, []);
-
-  useEffect(() => {
-    if (user?.email) {
-      getUserProjects(user.email);
-    }
-  }, [user]);
 
   const groupedTasks = {
     "To Do": [],
@@ -105,7 +105,7 @@ const UserDashboard = () => {
                     progress={task.progress}
                     dueDate={task.dueDate}
                     priority={task.priority}
-                    assignedBy={task.assignedBy || "Admin"}
+                    assignedBy={task.userName}
                     status={task.status}
                   />
                 ))
