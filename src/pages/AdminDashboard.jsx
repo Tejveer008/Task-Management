@@ -19,8 +19,8 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     try {
       const [projectsRes, usersRes] = await Promise.all([
-        fetch("http://localhost:8080/api/projects"),
-        fetch("http://localhost:8080/api/users"),
+        fetch("https://task-management-jet-omega.vercel.app/api/projects"),
+        fetch("https://task-management-jet-omega.vercel.app/api/users"),
       ]);
 
       const projectsData = await projectsRes.json();
@@ -56,8 +56,8 @@ const AdminDashboard = () => {
       if (image) formData.append("image", image);
 
       const url = editingId
-        ? `http://localhost:8080/api/projects/${editingId}`
-        : "http://localhost:8080/api/projects";
+        ? `https://task-management-jet-omega.vercel.app/api/projects/${editingId}`
+        : "https://task-management-jet-omega.vercel.app/api/projects";
 
       const method = editingId ? "PUT" : "POST";
 
@@ -103,7 +103,7 @@ const AdminDashboard = () => {
     if (!window.confirm("Are you sure you want to delete this task?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/projects/${id}`, {
+      const response = await fetch(`https://task-management-jet-omega.vercel.app/api/projects/${id}`, {
         method: "DELETE",
       });
 
