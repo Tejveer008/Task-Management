@@ -1,15 +1,11 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ children, allowedRole }) => {
+const ProtectedRoute = ({ allowedRole, children }) => {
   const user = JSON.parse(localStorage.getItem("loggedInUser"));
-
-  if (!user) {
+  
+  if (!user || (allowedRole && user.role !== allowedRole)) {
     return <Navigate to="/login" replace />;
-  }
-
-  if (allowedRole && user.role !== allowedRole) {
-    return <Navigate to="/" replace />;
   }
 
   return children;

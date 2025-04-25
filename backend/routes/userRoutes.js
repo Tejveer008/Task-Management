@@ -1,15 +1,16 @@
-// routes/userRoutes.js
-const express = require('express');
+// routes/users.js
+const express = require("express");
 const router = express.Router();
-const User = require('../Models/User'); // adjust path as needed
+const User = require("../Models/User");
 
-// GET all users
-router.get('/', async (req, res) => {
+// GET /api/users/:id
+router.get("/users/:id", async (req, res) => {
   try {
-    const users = await User.find(); // you can use .select('name email') to limit fields
-    res.json({ users });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch users' });
+    const user = await User.findById(req.params.id).select("-password"); // exclude password
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 

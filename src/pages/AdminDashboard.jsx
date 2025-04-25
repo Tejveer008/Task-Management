@@ -3,36 +3,37 @@ import AdminProjectCard from "../components/AdminProjectCard";
 
 const AdminDashboard = () => {
   const [projects, setProjects] = useState([]);
+  const [users, setUsers] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [assignedUser, setAssignedUser] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [progress, setProgress] = useState(0);
   const [priority, setPriority] = useState("");
+  const [status, setStatus] = useState("To Do");
   const [file, setFile] = useState(null);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [error, setError] = useState("");
-  const [users, setUsers] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
+  const fetchData = async () => {
+    try {
+      const [projectsRes, usersRes] = await Promise.all([
+        fetch("http://localhost:8080/api/projects"),
+        fetch("http://localhost:8080/api/users"),
+      ]);
+
+      const projectsData = await projectsRes.json();
+      const usersData = await usersRes.json();
+
+      setProjects(projectsData.projects);
+      setUsers(usersData.users);
+    } catch (err) {
+      setError("Error fetching data");
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [projectsRes, usersRes] = await Promise.all([
-          fetch("http://localhost:8080/api/projects"),
-          fetch("http://localhost:8080/api/users"),
-        ]);
-
-        const projectsData = await projectsRes.json();
-        const usersData = await usersRes.json();
-
-        setProjects(projectsData.projects);
-        setUsers(usersData.users);
-      } catch (err) {
-        setError("Error fetching data");
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -45,10 +46,12 @@ const AdminDashboard = () => {
     try {
       const formData = new FormData();
       formData.append("task", newTask);
-      formData.append("userName", assignedUser);
+      formData.append("userName", "Admin"); // Replace with actual admin name if available
+      formData.append("assignedTo", assignedUser); // important for user filtering
       formData.append("dueDate", dueDate);
       formData.append("progress", progress);
       formData.append("priority", priority);
+      formData.append("status", status);
       if (file) formData.append("file", file);
       if (image) formData.append("image", image);
 
@@ -65,17 +68,7 @@ const AdminDashboard = () => {
 
       if (!response.ok) throw new Error("Task operation failed");
 
-      const result = await response.json();
-
-      // If POST, add the new project to the list; if PUT, update existing
-      if (editingId) {
-        setProjects((prev) =>
-          prev.map((p) => (p._id === editingId ? result.project : p))
-        );
-      } else {
-        setProjects((prev) => [...prev, result.project]);
-      }
-
+      await fetchData(); // ✅ refresh project list
       resetForm();
     } catch (err) {
       setError("Error saving task");
@@ -88,26 +81,26 @@ const AdminDashboard = () => {
     setDueDate("");
     setProgress(0);
     setPriority("");
+    setStatus("To Do");
     setFile(null);
     setImage(null);
     setImagePreview("");
     setEditingId(null);
+    setError("");
   };
 
   const handleEdit = (project) => {
     setNewTask(project.task);
-    setAssignedUser(project.userName);
+    setAssignedUser(project.assignedTo);
     setDueDate(project.dueDate);
     setProgress(project.progress);
     setPriority(project.priority);
+    setStatus(project.status || "To Do");
     setEditingId(project._id || project.id);
   };
 
   const handleDelete = async (id) => {
-    const confirm = window.confirm(
-      "Are you sure you want to delete this task?"
-    );
-    if (!confirm) return;
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
 
     try {
       const response = await fetch(`http://localhost:8080/api/projects/${id}`, {
@@ -116,8 +109,7 @@ const AdminDashboard = () => {
 
       if (!response.ok) throw new Error("Delete failed");
 
-      const result = await response.json();
-      setProjects(result.projects);
+      await fetchData(); // refresh
     } catch (err) {
       setError("Error deleting task");
     }
@@ -145,7 +137,7 @@ const AdminDashboard = () => {
             >
               <option value="">Assign User</option>
               {users.map((user) => (
-                <option key={user._id || user.id} value={user.username}>
+                <option key={user._id || user.id} value={user.email || user.username}>
                   {user.username}
                 </option>
               ))}
@@ -175,7 +167,15 @@ const AdminDashboard = () => {
               <option value="Medium">⚠️ Medium</option>
               <option value="Low">🧊 Low</option>
             </select>
-
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="border p-2 rounded-lg"
+            >
+              <option value="To Do">To Do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
             <input
               type="file"
               onChange={(e) => setFile(e.target.files[0])}
@@ -216,22 +216,20 @@ const AdminDashboard = () => {
 
         <h2 className="font-bold text-2xl mb-6">Assigned Projects</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects
-            .filter((project) => project && project.userName && project.task)
-            .map((project) => (
-              <AdminProjectCard
-                key={project._id || project.id}
-                userName={project.userName}
-                task={project.task}
-                userProgress={project.progress}
-                taskDueDate={project.dueDate}
-                status={project.status}
-                priority={project.priority}
-                attachmentUrl={project.attachmentUrl}
-                onEdit={() => handleEdit(project)}
-                onDelete={() => handleDelete(project._id || project.id)}
-              />
-            ))}
+          {projects.map((project) => (
+            <AdminProjectCard
+              key={project._id || project.id}
+              userName={project.assignedTo}
+              task={project.task}
+              userProgress={project.progress}
+              taskDueDate={project.dueDate}
+              status={project.status || "To Do"}
+              priority={project.priority}
+              attachmentUrl={project.fileUrl || project.attachmentUrl}
+              onEdit={() => handleEdit(project)}
+              onDelete={() => handleDelete(project._id || project.id)}
+            />
+          ))}
         </div>
       </div>
     </div>

@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const projectSchema = new mongoose.Schema({
   task: { type: String, required: true },
-  userName: { type: String, required: true },
+  // assignedBy: { type: String, required: true }, // admin's name or email
+  // assignedTo: { type: String, required: true }, // user's email or ID
   dueDate: { type: String, required: true },
   progress: { type: Number, required: true },
   priority: { type: String, enum: ['High', 'Medium', 'Low'], required: true },

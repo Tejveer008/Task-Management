@@ -1,22 +1,27 @@
 const express = require("express");
 const router = express.Router();
+
 const Project = require("../Models/Project");
 
 const multer = require("multer");
 const { storage } = require("../config/cloudinary");
 const upload = multer({ storage });
 
-// Create task with file/image upload
+/**
+ * POST: Create a new task
+ * Required fields: task, userName (admin), assignedTo (user), dueDate, progress, priority
+ */
 router.post("/", upload.fields([{ name: "file" }, { name: "image" }]), async (req, res) => {
   try {
-    const { task, userName, dueDate, progress, priority } = req.body;
+    const { task, userName, assignedTo, dueDate, progress, priority } = req.body;
 
     const fileUrl = req.files?.file ? req.files.file[0].path : "";
     const imageUrl = req.files?.image ? req.files.image[0].path : "";
 
     const newProject = new Project({
       task,
-      userName,
+      userName,        // Admin name
+      assignedTo,      // Assigned user (email or ID)
       dueDate,
       progress,
       priority,
@@ -26,29 +31,22 @@ router.post("/", upload.fields([{ name: "file" }, { name: "image" }]), async (re
     });
 
     await newProject.save();
+
     const projects = await Project.find();
     res.status(201).json({ projects });
   } catch (err) {
-    console.error(err);
+    console.error("Error creating project:", err);
     res.status(500).json({ error: "Failed to create project" });
   }
 });
 
-// Get all projects
-router.get("/", async (req, res) => {
-  try {
-    const projects = await Project.find();
-    res.status(200).json({ projects });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch projects" });
-  }
-});
-
-// Update a project by ID
+/**
+ * PUT: Update a task by ID
+ */
 router.put("/:id", upload.fields([{ name: "file" }, { name: "image" }]), async (req, res) => {
   try {
     const { id } = req.params;
-    const { task, userName, dueDate, progress, priority } = req.body;
+    const { task, userName, assignedTo, dueDate, progress, priority } = req.body;
 
     const fileUrl = req.files?.file ? req.files.file[0].path : undefined;
     const imageUrl = req.files?.image ? req.files.image[0].path : undefined;
@@ -56,6 +54,7 @@ router.put("/:id", upload.fields([{ name: "file" }, { name: "image" }]), async (
     const updatedData = {
       task,
       userName,
+      assignedTo,
       dueDate,
       progress,
       priority,
@@ -72,23 +71,37 @@ router.put("/:id", upload.fields([{ name: "file" }, { name: "image" }]), async (
 
     res.status(200).json({ project: updatedProject });
   } catch (err) {
-    console.error(err);
+    console.error("Error updating project:", err);
     res.status(500).json({ error: "Failed to update project" });
   }
 });
 
-// Delete a project by ID
+/**
+ * GET: Fetch all projects
+ */
+router.get("/", async (req, res) => {
+  try {
+    const projects = await Project.find();
+    res.status(200).json({ projects });
+  } catch (err) {
+    console.error("Error fetching projects:", err);
+    res.status(500).json({ error: "Failed to fetch projects" });
+  }
+});
+
+/**
+ * DELETE: Delete a task by ID
+ */
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     await Project.findByIdAndDelete(id);
-    const projects = await Project.find();
+    const projects = await Project.find(); // return updated list
     res.status(200).json({ projects });
   } catch (err) {
-    console.error(err);
+    console.error("Error deleting project:", err);
     res.status(500).json({ error: "Failed to delete project" });
   }
 });
-
 
 module.exports = router;

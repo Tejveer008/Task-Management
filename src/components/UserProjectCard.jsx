@@ -1,6 +1,6 @@
 import React from "react";
 import { format } from "date-fns";
-import { Clock, Flag, User } from "lucide-react";
+import { Clock, Flag, User, Image as ImageIcon, FileText } from "lucide-react";
 
 const UserProjectCard = ({
   title,
@@ -9,6 +9,8 @@ const UserProjectCard = ({
   priority,
   assignedBy,
   status,
+  fileUrl,
+  imageUrl,
 }) => {
   const formattedDueDate = dueDate
     ? format(new Date(dueDate), "dd MMM yyyy")
@@ -30,25 +32,66 @@ const UserProjectCard = ({
   };
 
   return (
-    <div className="bg-gray-50 p-4 rounded-lg shadow hover:shadow-md transition duration-200">
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <div className="text-sm mb-1 flex items-center gap-2">
-        <User size={16} /> <span className="text-gray-600">Assigned by:</span>{" "}
-        <span className="font-medium">{assignedBy}</span>
+    <div className="bg-white shadow-lg rounded-lg p-6 w-full sm:w-80">
+      <div className="mb-2">
+        <h3 className="text-lg font-bold">{title}</h3>
+        <p className="text-sm text-gray-500 mb-1">
+          <User size={14} className="inline" /> Assigned by: <strong>{assignedBy}</strong>
+        </p>
+        <p className={`text-sm ${isOverdue ? "text-red-500 font-semibold" : "text-gray-600"}`}>
+          <Clock size={14} className="inline mr-1" />
+          {isOverdue ? "Overdue: " : "Due: "} {formattedDueDate}
+        </p>
       </div>
-      <div className="text-sm mb-1 flex items-center gap-2">
-        <Clock size={16} />{" "}
-        <span className={isOverdue ? "text-red-500 font-semibold" : "text-gray-600"}>
-          {isOverdue ? "Overdue: " : "Due:"} {formattedDueDate}
+
+      <div className="flex items-center justify-between mb-2">
+        <span className={`text-sm font-medium ${getPriorityColor()}`}>
+          <Flag size={14} className="inline mr-1" />
+          {priority} Priority
         </span>
+        <span className="text-sm text-gray-500">{status}</span>
       </div>
-      <div className="text-sm flex items-center gap-2">
-        <Flag size={16} />{" "}
-        <span className={getPriorityColor()}>{priority || "No priority"}</span>
+
+      <div className="h-2 w-full bg-gray-200 rounded-full mt-2 mb-2">
+        <div
+          className="h-2 rounded-full"
+          style={{
+            width: `${progress}%`,
+            backgroundColor: progress === 100 ? "green" : progress > 50 ? "yellow" : "blue",
+          }}
+        ></div>
       </div>
-      <div className="mt-2 text-xs text-gray-500">
-        Progress: {progress}% | Status: {status}
-      </div>
+      <p className="text-right text-sm font-semibold">{progress}% Complete</p>
+
+      {/* Preview File & Image */}
+      {(fileUrl || imageUrl) && (
+        <div className="mt-4 space-y-2">
+          {fileUrl && (
+            <a
+              href={fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 text-sm flex items-center gap-1 hover:underline"
+              download
+            >
+              <FileText size={14} />
+              Download File
+            </a>
+          )}
+          {imageUrl && (
+            <div>
+              <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
+                <ImageIcon size={14} /> Image Preview:
+              </p>
+              <img
+                src={imageUrl}
+                alt="Task Attachment"
+                className="w-full h-32 object-cover rounded border"
+              />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

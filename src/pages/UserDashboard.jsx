@@ -1,24 +1,72 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import UserProjectCard from "./UserProjectCard";
+import UserProjectCard from "../components/UserProjectCard";
 
 const UserDashboard = () => {
+  const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const getUserProjects = async () => {
+  const localUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+  // 1. Fetch full user data
+  const fetchUser = async () => {
+    try {
+      if (!localUser || !localUser._id) {
+        console.warn("No user ID found.");
+        return;
+      }
+
+      const res = await axios.get(`/api/users/${localUser._id}`);
+      setUser(res.data);
+    } catch (error) {
+      console.error("Failed to fetch user:", error);
+    }
+  };
+
+  // 2. Fetch tasks for the logged-in user
+  const getUserProjects = async (email) => {
     try {
       const res = await axios.get("/api/projects");
-      setProjects(res.data.projects || []);
+
+      const userTasks = res.data.projects.filter(
+        (project) => project.assignedTo === email
+      );
+
+      if (userTasks.length === 0) {
+        userTasks.push({
+          _id: "dummy1",
+          task: "Complete onboarding document",
+          progress: 0,
+          dueDate: new Date().toISOString().split("T")[0],
+          priority: "Medium",
+          assignedBy: "Admin User",
+          assignedTo: email,
+        });
+      }
+
+      setProjects(userTasks);
     } catch (err) {
       console.error("Error fetching projects", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    getUserProjects();
+    const loadData = async () => {
+      await fetchUser();
+    };
+
+    loadData();
   }, []);
 
-  // Categorize tasks by status
+  useEffect(() => {
+    if (user?.email) {
+      getUserProjects(user.email);
+    }
+  }, [user]);
+
   const groupedTasks = {
     "To Do": [],
     "In Progress": [],
@@ -34,6 +82,10 @@ const UserDashboard = () => {
         : "To Do";
     groupedTasks[status].push({ ...project, status });
   });
+
+  if (loading) {
+    return <div className="p-6">Loading tasks...</div>;
+  }
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -53,7 +105,7 @@ const UserDashboard = () => {
                     progress={task.progress}
                     dueDate={task.dueDate}
                     priority={task.priority}
-                    assignedBy={task.userName}
+                    assignedBy={task.assignedBy || "Admin"}
                     status={task.status}
                   />
                 ))

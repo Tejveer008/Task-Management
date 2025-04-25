@@ -1,4 +1,5 @@
 import React from 'react';
+import { format } from 'date-fns';  // Use date-fns for consistent date formatting
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -41,19 +42,19 @@ const AdminProjectCard = ({
     <div className="bg-white rounded-xl shadow-md p-4 space-y-3">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-bold">{task}</h3>
-        <span className={`${getStatusColor(status)} px-2 py-1 rounded-full text-xs text-white`}>
+        <span className={`${getStatusColor(status)} px-2 py-1 rounded-full text-xs bg-green-400 text-white`}>
           {status}
         </span>
       </div>
       <p className="text-sm text-gray-500">Assigned to: <strong>{userName}</strong></p>
       <div className="flex items-center justify-between">
-        <p className="text-sm">Due: {new Date(taskDueDate).toLocaleDateString()}</p>
+        <p className="text-sm">Due: {format(new Date(taskDueDate), 'MMM dd, yyyy')}</p>
         <p className={`text-sm font-semibold ${getPriorityColor(priority)}`}>
           {priority} Priority
         </p>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
-        <div className={`h-2 rounded-full ${getStatusColor(status)}`} style={{ width: `${userProgress}%` }}></div>
+        <div className={`h-2 rounded-full bg-blue-500`} style={{ width: `${userProgress}%` }}></div>
       </div>
       {attachmentUrl && (
         <div>
@@ -63,8 +64,20 @@ const AdminProjectCard = ({
         </div>
       )}
       <div className="flex justify-between mt-2">
-        <button onClick={onEdit} className="text-blue-500 hover:underline text-sm">Edit</button>
-        <button onClick={onDelete} className="text-red-500 hover:underline text-sm">Delete</button>
+        <button 
+          onClick={onEdit} 
+          className="text-blue-500 hover:underline text-sm" 
+          aria-label="Edit Task"
+        >
+          Edit
+        </button>
+        <button 
+          onClick={onDelete} 
+          className="text-red-500 hover:underline text-sm" 
+          aria-label="Delete Task"
+        >
+          Delete
+        </button>
       </div>
     </div>
   );
