@@ -1,7 +1,6 @@
-!(assets/image.jpg)
-!(assets/image1.jpg)
-!(assets/image2.jpg)
-
+![Screenshot-1](assets/image1.png)
+![Screenshot-2](assets/image2.png)
+![Screenshot-3](assets/image.png)
 
 
 
