@@ -18,7 +18,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/tasks", taskRoutes);s
+app.use("/api/tasks", taskRoutes);
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
