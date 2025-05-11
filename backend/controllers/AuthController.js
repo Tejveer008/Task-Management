@@ -1,101 +1,92 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const UserModel = require('../Models/User');
-const validator = require('validator');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const Admin = require("../Models/Admin");
 
-// Signup
-const signup = async (req, res) => {
-    try {
-        const { name, email, password, role } = req.body;
+exports.getMe = async (req, res) => {
+  try {
+    // `req.user` is set by the `protect` middleware after verifying the JWT
+    const userData = {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role,
+      username: req.user.username || null,
+      adminName: req.user.adminName || null,
+      permissions: req.user.permissions || [],
+    };
 
-        // Input validation
-        if (!validator.isEmail(email)) {
-            return res.status(400).json({
-                message: 'Invalid email format',
-                success: false
-            });
-        }
-
-        if (password.length < 6) {
-            return res.status(400).json({
-                message: 'Password must be at least 6 characters',
-                success: false
-            });
-        }
-
-        const user = await UserModel.findOne({ email });
-        if (user) {
-            return res.status(409).json({
-                message: 'User already exists, please login',
-                success: false
-            });
-        }
-
-        // Hash password and save user with the role
-        const userModel = new UserModel({ name, email, password, role });
-        userModel.password = await bcrypt.hash(password, 10);
-        await userModel.save();
-
-        res.status(201).json({
-            message: 'Signup successful',
-            success: true
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({
-            message: 'Internal server error',
-            success: false
-        });
-    }
+    res.status(200).json(userData);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to get user info" });
+  }
 };
 
-// Login
-const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const errorMsg = 'Auth failed, email or password is incorrect';
 
-        const user = await UserModel.findOne({ email });
-        if (!user) {
-            return res.status(403).json({
-                message: errorMsg,
-                success: false
-            });
-        }
+exports.signup = async (req, res) => {
+  const { email, password, role, username, adminName } = req.body;
 
-        const isPassEqual = await bcrypt.compare(password, user.password);
-        if (!isPassEqual) {
-            return res.status(403).json({
-                message: errorMsg,
-                success: false
-            });
-        }
+  try {
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).json({ message: "User already exists" });
 
-        // Create JWT token with role
-        const jwtToken = jwt.sign(
-            { email: user.email, _id: user._id, role: user.role },  // Include role in the JWT payload
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
+    const user = new User({
+      email,
+      password,
+      role,
+      username: role === "user" ? username : undefined,
+      adminName: role === "admin" ? adminName : undefined,
+    });
 
-        res.status(200).json({
-            message: 'Login successful',
-            success: true,
-            jwtToken,
-            email,
-            name: user.name,
-            role: user.role  // Send role to the frontend
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({
-            message: 'Internal server error',
-            success: false
-        });
+    await user.save();
+
+    if (role === "admin") {
+      await Admin.create({
+        userId: user._id,
+        permissions: ["manageTasks", "manageUsers"],
+      });
     }
+
+    res.status(201).json({ message: "Signup successful" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
-module.exports = {
-    signup,
-    login
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user || user.password !== password) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
+  const adminProfile = await Admin.findOne({ userId: user._id });
+
+  const tokenPayload = {
+    id: user._id,
+    email: user.email,
+    role: adminProfile ? "admin" : "user",
+    username: user.username,
+    adminName: user.adminName,
+    permissions: adminProfile?.permissions || [],
+  };
+
+  const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: "1d" });
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "Lax",
+    secure: false,
+    maxAge: 86400000,
+  });
+
+  res.json({ message: "Login successful", user: tokenPayload });
+};
+
+exports.getMe = (req, res) => {
+  res.json(req.user);
+};
+
+exports.logout = (req, res) => {
+  res.clearCookie("token");
+  res.json({ message: "Logged out" });
 };

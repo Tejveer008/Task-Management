@@ -1,181 +1,80 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  IconButton,
-  InputAdornment,
-  Paper,
-} from "@mui/material";
-import {
-  Visibility,
-  VisibilityOff,
-} from "@mui/icons-material";
-import { Link, useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { useNavigate, Link } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
-  const [role, setRole] = useState("user");
-  const [loginInfo, setLoginInfo] = useState({ email: "", password: "" });
-  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setLoginInfo((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const validateForm = () => {
-    const { email, password } = loginInfo;
-    if (!email || !password) {
-      toast.warning("Please fill out all fields", { position: "top-center" });
-      return false;
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      toast.warning("Invalid email format", { position: "top-center" });
-      return false;
-    }
-    return true;
-  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
 
     try {
-      const response = await fetch("https://task-management-jet-omega.vercel.app/api/auth/login", {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...loginInfo, role }),
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
-
       if (response.ok) {
-        localStorage.setItem(
-          "loggedInUser",
-          JSON.stringify({ token: data.token, role: data.role })
-        );
-        window.dispatchEvent(new Event("storage"));
-        toast.success("Login successful!", { position: "top-center" });
+        localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+        toast.success("Login successful", { position: "top-center" });
         setTimeout(() => {
-          navigate(role === "admin" ? "/admin-dashboard" : "/user-dashboard");
-        }, 1200);
+          if (data.user.role === "admin") navigate("/admin-dashboard");
+          else navigate("/user-dashboard");
+        }, 1500);
       } else {
-        toast.error(data.message || "Invalid email or password!", {
-          position: "top-center",
-        });
+        toast.error(data.message || "Login failed", { position: "top-center" });
       }
     } catch (error) {
-      console.error(error);
-      toast.error("Login failed. Please try again later.", {
-        position: "top-center",
-      });
+      toast.error("Server error. Try again.", { position: "top-center" });
     }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: "linear-gradient(to right, #2563eb, #000000)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        p: 2,
-      }}
-    >
-      <Paper
-        elevation={6}
-        sx={{
-          width: "100%",
-          maxWidth: 400,
-          p: 4,
-          borderRadius: 3,
-          backgroundColor: "white",
-        }}
-      >
-        <Typography variant="h4" align="center" color="primary" gutterBottom>
-          Login
-        </Typography>
-
-        <form onSubmit={handleLogin} noValidate>
-          <TextField
-            fullWidth
-            label="Email"
-            variant="outlined"
-            margin="normal"
-            name="email"
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-r from-blue-600 to-black">
+      <div className="w-full max-w-md bg-white rounded-xl p-6 shadow-lg">
+        <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">Login</h2>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input
+            type="email"
             autoComplete="email"
-            value={loginInfo.email}
-            onChange={handleChange}
+            name="email"
+            placeholder="Email"
+            className="w-full p-2 border border-gray-300 rounded-md"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
-
-          <TextField
-            fullWidth
-            label="Password"
-            variant="outlined"
-            margin="normal"
+          <input
+            type="password"
             name="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="current-password"
-            value={loginInfo.password}
-            onChange={handleChange}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
+            placeholder="Password"
+            className="w-full p-2 border border-gray-300 rounded-md"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
           />
-
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="role-label">Select Role</InputLabel>
-            <Select
-              labelId="role-label"
-              value={role}
-              label="Select Role"
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <MenuItem value="user">User</MenuItem>
-              <MenuItem value="admin">Admin</MenuItem>
-            </Select>
-          </FormControl>
-
-          <Button
-            fullWidth
-            variant="contained"
-            color="primary"
-            size="large"
+          <button
             type="submit"
-            sx={{ mt: 2 }}
+            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
           >
             Login
-          </Button>
+          </button>
         </form>
-
-        <Typography variant="body2" align="center" sx={{ mt: 3 }}>
+        <p className="text-sm text-center mt-4">
           Don't have an account?{" "}
-          <Link to="/signup" style={{ color: "#2563eb" }}>
-            Sign up
+          <Link to="/signup" className="text-blue-600 hover:underline">
+            Sign Up
           </Link>
-        </Typography>
-
+        </p>
         <ToastContainer />
-      </Paper>
-    </Box>
+      </div>
+    </div>
   );
 };
 

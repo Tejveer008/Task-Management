@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
 import axios from "axios";
 import UserProjectCard from "../components/UserProjectCard";
+import { useEffect, useState } from "react";
 
 const UserDashboard = () => {
   const [projects, setProjects] = useState([]);
@@ -9,59 +9,24 @@ const UserDashboard = () => {
   const user = JSON.parse(localStorage.getItem("loggedInUser"));
 
   const getUserProjects = async () => {
-    try {
-      if (!user || !user.email) {
-        console.warn("No user is logged in.");
-        return;
-      }
-  
-      const res = await axios.get("/api/projects");
-  
-      const userTasks = res.data.projects.filter(
-        (project) => project.assignedTo === user.email
-      );
-  
-      // If no tasks are assigned, add some dummy projects
-      if (userTasks.length === 0) {
-        userTasks.push(
-          {
-            _id: "dummy1",
-            task: "Complete onboarding document",
-            progress: 0,
-            dueDate: new Date().toISOString().split("T")[0], // today's date
-            priority: "Medium",
-            assignedBy: "Admin User",
-            assignedTo: user.email,
-          },
-          {
-            _id: "dummy2",
-            task: "Review project proposal",
-            progress: 50,
-            dueDate: new Date().toISOString().split("T")[0],
-            priority: "High",
-            assignedBy: "Admin User",
-            assignedTo: user.email,
-          },
-          {
-            _id: "dummy3",
-            task: "Bug fixes in app",
-            progress: 20,
-            dueDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split("T")[0], // next week
-            priority: "Low",
-            assignedBy: "Admin User",
-            assignedTo: user.email,
-          }
-        );
-      }
-  
-      setProjects(userTasks);
-    } catch (err) {
-      console.error("Error fetching projects", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
+  try {
+    const userRes = await axios.get('http://localhost:8080/api/auth/me', {
+      withCredentials: true,
+    });
+
+    const userEmail = userRes.data.email;
+    const res = await axios.get(`http://localhost:8080/api/tasks/user/${userEmail}`, {
+      withCredentials: true,
+    });
+
+    setProjects(res.data.projects || []);
+  } catch (err) {
+    console.warn("User not logged in or failed to fetch tasks");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     getUserProjects();
@@ -83,9 +48,7 @@ const UserDashboard = () => {
     groupedTasks[status].push({ ...project, status });
   });
 
-  if (loading) {
-    return <div className="p-6">Loading tasks...</div>;
-  }
+  if (loading) return <div className="p-6">Loading tasks...</div>;
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -107,6 +70,8 @@ const UserDashboard = () => {
                     priority={task.priority}
                     assignedBy={task.userName}
                     status={task.status}
+                    fileUrl={task.fileUrl}
+                    imageUrl={task.imageUrl}
                   />
                 ))
               )}

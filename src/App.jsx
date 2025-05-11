@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -12,44 +13,34 @@ import TeamCollaboration from "./components/TeamCollaboration";
 import Home from "./components/Home";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// Utility functions
-const isAuthenticated = () => {
-  return !!localStorage.getItem("loggedInUser");
-};
-
-const getUserRole = () => {
-  const user = JSON.parse(localStorage.getItem("loggedInUser"));
-  return user ? user.role : null;
-};
-
 function App() {
+  const [authenticated, setAuthenticated] = useState(false);
+  const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const [authenticated, setAuthenticated] = useState(isAuthenticated());
-  const [role, setRole] = useState(getUserRole());
 
-  // Update auth state if changed in another tab or by navigation
+  const fetchUser = async () => {
+    try {
+      const res = await axios.get("http://localhost:8080/api/auth/me", {
+        withCredentials: true,
+      });
+      setAuthenticated(true);
+      setRole(res.data.role);
+    } catch (err) {
+      setAuthenticated(false);
+      setRole(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const updateAuthState = () => {
-      const user = JSON.parse(localStorage.getItem("loggedInUser"));
-      if (user) {
-        setAuthenticated(true);
-        setRole(user.role);
-      } else {
-        setAuthenticated(false);
-        setRole(null);
-      }
-    };
-
-    window.addEventListener("storage", updateAuthState);
-    window.addEventListener("popstate", updateAuthState);
-
-    return () => {
-      window.removeEventListener("storage", updateAuthState);
-      window.removeEventListener("popstate", updateAuthState);
-    };
+    fetchUser();
   }, []);
 
   const toggleSettings = () => setShowSettings(!showSettings);
+
+  if (loading) return <div className="p-6">Checking authentication...</div>;
 
   return (
     <Router>
@@ -88,7 +79,7 @@ function App() {
                       path="/client-messages"
                       element={
                         <ProtectedRoute>
-                          <ClientMessages />
+                          <ClientMessages role={role} />
                         </ProtectedRoute>
                       }
                     />
@@ -104,11 +95,7 @@ function App() {
                       path="*"
                       element={
                         <Navigate
-                          to={
-                            role === "admin"
-                              ? "/admin-dashboard"
-                              : "/user-dashboard"
-                          }
+                          to={role === "admin" ? "/admin-dashboard" : "/user-dashboard"}
                           replace
                         />
                       }

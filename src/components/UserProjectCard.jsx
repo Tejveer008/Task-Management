@@ -32,19 +32,17 @@ const UserProjectCard = ({
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-6 w-full sm:w-80">
-      <div className="mb-2">
-        <h3 className="text-lg font-bold">{title}</h3>
-        <p className="text-sm text-gray-500 mb-1">
-          <User size={14} className="inline" /> Assigned by: <strong>{assignedBy}</strong>
-        </p>
-        <p className={`text-sm ${isOverdue ? "text-red-500 font-semibold" : "text-gray-600"}`}>
-          <Clock size={14} className="inline mr-1" />
-          {isOverdue ? "Overdue: " : "Due: "} {formattedDueDate}
-        </p>
-      </div>
+    <div className="bg-white shadow-md rounded-lg p-5 w-full sm:w-80">
+      <h3 className="text-lg font-bold">{title}</h3>
+      <p className="text-sm text-gray-500 mb-1">
+        <User size={14} className="inline" /> Assigned by: <strong>{assignedBy}</strong>
+      </p>
+      <p className={`text-sm ${isOverdue ? "text-red-500 font-semibold" : "text-gray-600"}`}>
+        <Clock size={14} className="inline mr-1" />
+        {isOverdue ? "Overdue: " : "Due: "} {formattedDueDate}
+      </p>
 
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between my-2">
         <span className={`text-sm font-medium ${getPriorityColor()}`}>
           <Flag size={14} className="inline mr-1" />
           {priority} Priority
@@ -52,18 +50,18 @@ const UserProjectCard = ({
         <span className="text-sm text-gray-500">{status}</span>
       </div>
 
-      <div className="h-2 w-full bg-gray-200 rounded-full mt-2 mb-2">
+      <div className="h-2 w-full bg-gray-200 rounded-full mt-1 mb-2">
         <div
           className="h-2 rounded-full"
           style={{
             width: `${progress}%`,
-            backgroundColor: progress === 100 ? "green" : progress > 50 ? "yellow" : "blue",
+            backgroundColor:
+              progress === 100 ? "green" : progress > 50 ? "yellow" : "blue",
           }}
         ></div>
       </div>
       <p className="text-right text-sm font-semibold">{progress}% Complete</p>
 
-      {/* Preview File & Image */}
       {(fileUrl || imageUrl) && (
         <div className="mt-4 space-y-2">
           {fileUrl && (

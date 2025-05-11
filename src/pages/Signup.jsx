@@ -48,7 +48,7 @@ const Signup = () => {
     };
 
     try {
-      const response = await fetch("https://task-management-jet-omega.vercel.app/api/auth/signup", {
+      const response = await fetch("http://localhost:8080/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -155,7 +155,7 @@ const Signup = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200"
+            className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200"
           >
             Sign Up
           </button>
