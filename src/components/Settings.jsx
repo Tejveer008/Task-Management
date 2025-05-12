@@ -1,28 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Avatar, Switch, Button } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Settings = ({ closeSettings, role, userName, avatar, jobTitle }) => {
-  const isAdmin = role === 'admin'; // Check if the user is an admin
+  const navigate = useNavigate();
+  const isAdmin = role === 'admin';
 
-  // Initialize darkMode state from localStorage if available
   const [darkMode, setDarkMode] = useState(() => {
-    const savedDarkMode = localStorage.getItem('darkMode');
-    return savedDarkMode ? JSON.parse(savedDarkMode) : false; // Default to false if not in localStorage
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
   });
 
-  // Update localStorage whenever darkMode state changes
   useEffect(() => {
     if (darkMode) {
-      localStorage.setItem('darkMode', true); // Save dark mode preference
+      localStorage.setItem('darkMode', true);
     } else {
-      localStorage.removeItem('darkMode'); // Remove dark mode preference
+      localStorage.removeItem('darkMode');
     }
   }, [darkMode]);
 
-  // Toggle dark mode on Switch change
-  const handleDarkModeToggle = (event) => {
-    setDarkMode(event.target.checked);
+  const handleDarkModeToggle = (e) => {
+    setDarkMode(e.target.checked);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post("http://localhost:8080/api/auth/logout", {}, { withCredentials: true });
+    } catch (err) {
+      console.error("Logout failed", err);
+    } finally {
+      localStorage.removeItem("loggedInUser");
+      navigate("/login");
+    }
   };
 
   return (
@@ -51,7 +61,7 @@ const Settings = ({ closeSettings, role, userName, avatar, jobTitle }) => {
         />
       </div>
 
-      {/* Admin-specific actions */}
+      {/* Admin Actions */}
       {isAdmin && (
         <div className="p-4">
           <Button variant="outlined" color="error" fullWidth>
@@ -60,21 +70,17 @@ const Settings = ({ closeSettings, role, userName, avatar, jobTitle }) => {
         </div>
       )}
 
-      {/* Logout and Account Deletion */}
+      {/* Logout */}
       <div className="p-4">
-      <Button
-  variant="contained"
-  color="primary"
-  fullWidth
-  className="mt-4"
-  onClick={() => {
-    localStorage.removeItem("loggedInUser");
-    window.location.href = "/login"; // force navigation
-  }}
->
-  Logout
-</Button>
-
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          className="mt-4"
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
       </div>
     </div>
   );

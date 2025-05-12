@@ -19,7 +19,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
 
-  const fetchUser = async () => {
+  const fetchAuthenticatedUser = async () => {
     try {
       const res = await axios.get("http://localhost:8080/api/auth/me", {
         withCredentials: true,
@@ -35,12 +35,14 @@ function App() {
   };
 
   useEffect(() => {
-    fetchUser();
+    fetchAuthenticatedUser();
   }, []);
 
   const toggleSettings = () => setShowSettings(!showSettings);
 
-  if (loading) return <div className="p-6">Checking authentication...</div>;
+  if (loading) {
+    return <div className="p-6">Checking authentication...</div>;
+  }
 
   return (
     <Router>
@@ -50,7 +52,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Protected Routes with Layout */}
+        {/* Authenticated User Routes */}
         {authenticated ? (
           <Route
             path="/*"

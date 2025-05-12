@@ -1,44 +1,55 @@
-// pages/Login.jsx
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import PasswordInput from "../components/PasswordInput"; // Adjust the path if needed
+import PasswordInput from "../components/PasswordInput";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  // Optional: Redirect if already logged in
+  useEffect(() => {
+    const checkLogin = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/auth/me", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (res.ok) {
+          navigate(data.role === "admin" ? "/admin-dashboard" : "/user-dashboard");
+        }
+      } catch (err) {}
+    };
+    checkLogin();
+  }, []);
+
   const handleLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const response = await fetch("http://localhost:8080/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include", // sends the JWT cookie
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
-    console.log(data);
+      const data = await response.json();
 
-    if (response.ok) {
-      toast.success("Login successful", { position: "top-center" });
-
-      setTimeout(() => {
-        if (data.user.role === "admin") navigate("/admin-dashboard");
-        else navigate("/user-dashboard");
-      }, 1500);
-    } else {
-      toast.error(data.message || "Login failed", { position: "top-center" });
+      if (response.ok) {
+        toast.success("Login successful", { position: "top-center" });
+        setTimeout(() => {
+          navigate(data.user.role === "admin" ? "/admin-dashboard" : "/user-dashboard");
+        }, 1500);
+      } else {
+        toast.error(data.message || "Login failed", { position: "top-center" });
+      }
+    } catch (error) {
+      toast.error("Server error. Try again.", { position: "top-center" });
     }
-  } catch (error) {
-    toast.error("Server error. Try again.", { position: "top-center" });
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-r from-blue-600 to-black">

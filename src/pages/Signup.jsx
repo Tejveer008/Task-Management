@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -17,16 +17,13 @@ const Signup = () => {
   const navigate = useNavigate();
 
   const validate = () => {
-    let newErrors = {};
+    const newErrors = {};
     if (!formData.name) newErrors.name = "Name is required";
     else if (formData.name.length < 3) newErrors.name = "Name must be at least 3 characters";
-
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email address is invalid";
-
     if (!formData.password) newErrors.password = "Password is required";
     else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
-
     if (formData.confirmPassword !== formData.password)
       newErrors.confirmPassword = "Passwords do not match";
 
@@ -51,24 +48,21 @@ const Signup = () => {
       const response = await fetch("http://localhost:8080/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
       const data = await response.json();
       if (response.ok) {
-        toast.success("Signup successful! Redirecting to login...", {
-          position: "top-center",
-        });
-        setTimeout(() => navigate("/login"), 1500);
+        toast.success("Signup successful! Redirecting...", { position: "top-center" });
+        setTimeout(() => {
+          navigate(formData.role === "admin" ? "/admin-dashboard" : "/user-dashboard");
+        }, 1500);
       } else {
-        toast.error(data.message || "Signup failed", {
-          position: "top-center",
-        });
+        toast.error(data.message || "Signup failed", { position: "top-center" });
       }
     } catch (error) {
-      toast.error("Something went wrong. Please try again.", {
-        position: "top-center",
-      });
+      toast.error("Something went wrong. Please try again.", { position: "top-center" });
     }
   };
 
@@ -77,19 +71,15 @@ const Signup = () => {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: "linear-gradient(to right, #2563eb, #000000)" }}
-    >
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-r from-blue-600 to-black">
       <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-6">
-        <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
-          Create Account
-        </h2>
-
+        <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">Create Account</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <label className="block text-sm font-medium text-gray-700">
+              {formData.role === "admin" ? "Admin Name" : "Username"}
+            </label>
             <input
               type="text"
               name="name"
@@ -98,7 +88,7 @@ const Signup = () => {
               className={`w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                 errors.name ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="Enter your name"
+              placeholder={`Enter your ${formData.role === "admin" ? "admin name" : "username"}`}
             />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
@@ -155,7 +145,7 @@ const Signup = () => {
 
           <button
             type="submit"
-            className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200"
           >
             Sign Up
           </button>
