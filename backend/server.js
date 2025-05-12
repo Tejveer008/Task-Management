@@ -31,10 +31,10 @@ app.use("/api/tasks", taskRoutes);
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
-
+const PORT = process.env.PORT || 8080;
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('MongoDB connected');
-    app.listen(8080, () => console.log('Server running on port http://localhost:8080'));
+    app.listen(PORT,'0.0.0.0', () => console.log('Server running on port http://localhost:8080'));
   })
   .catch((err) => console.log(err));

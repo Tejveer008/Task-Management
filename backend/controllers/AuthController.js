@@ -75,7 +75,7 @@ exports.login = async (req, res) => {
   try {
     // Try User
     const user = await User.findOne({ email });
-    if (user && await user.comparePassword(password)) {
+    if (user && (await user.comparePassword(password))) {
       const userPayload = {
         id: user._id,
         email: user.email,
@@ -89,7 +89,7 @@ exports.login = async (req, res) => {
 
     // Try Admin
     const admin = await Admin.findOne({ email });
-    if (admin && await admin.comparePassword(password)) {
+    if (admin && (await admin.comparePassword(password))) {
       const adminPayload = {
         id: admin._id,
         email: admin.email,
@@ -146,6 +146,10 @@ exports.getMe = async (req, res) => {
 
 // POST /api/auth/logout
 exports.logout = (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "Lax",
+    secure: false, // Match the setting used in generateTokenAndSetCookie
+  });
   res.json({ message: "Logged out successfully" });
 };
