@@ -13,7 +13,7 @@ const taskRoutes = require("./routes/taskRoutes");
 const app = express();
 
 // Enable CORS
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: ['http://localhost:5173', 'https://task-management-4gvv.onrender.com'],credentials: true }));
 
 app.use(express.json());
 app.use(cookieParser());
