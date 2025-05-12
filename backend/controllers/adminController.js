@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const User = require("../models-tem/User");
 
 exports.getAllUsers = async (req, res) => {
   const users = await User.find({ role: "user" }).select("-password");
