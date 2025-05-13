@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PasswordInput from "../components/PasswordInput";
@@ -8,28 +8,22 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
 
+  // Optional: Redirect if already logged in
   useEffect(() => {
-    const checkLogin = async () => {
-      try {
-        const res = await fetch("http://localhost:8080/api/auth/me", {
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (res.ok) {
-          navigate(data.role === "admin" ? "/admin-dashboard" : "/user-dashboard");
-        }
-      } catch (err) {
-        console.error("Error checking login status:", err);
+  const checkLogin = async () => {
+    try {
+      const res = await fetch("http://localhost:8080/api/auth/me", {
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        navigate(data.role === "admin" ? "/admin-dashboard" : "/user-dashboard");
       }
-    };
-
-    const fromLogout = new URLSearchParams(location.search).get("fromLogout");
-    if (!fromLogout) {
-      checkLogin();
-    }
-  }, [location, navigate]);
+    } catch (err) {}
+  };
+  checkLogin();
+}, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -46,21 +40,8 @@ const Login = () => {
 
       if (response.ok) {
         toast.success("Login successful", { position: "top-center" });
-        // Wait for the cookie to be set before redirecting
-        setTimeout(async () => {
-          try {
-            const res = await fetch("http://localhost:8080/api/auth/me", {
-              credentials: "include",
-            });
-            const userData = await res.json();
-            if (res.ok) {
-              navigate(userData.role === "admin" ? "/admin-dashboard" : "/user-dashboard");
-            } else {
-              toast.error("Failed to verify user after login", { position: "top-center" });
-            }
-          } catch (err) {
-            toast.error("Error verifying user after login", { position: "top-center" });
-          }
+        setTimeout(() => {
+          navigate(data.user.role === "admin" ? "/admin-dashboard" : "/user-dashboard");
         }, 1500);
       } else {
         toast.error(data.message || "Login failed", { position: "top-center" });
