@@ -2,58 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { useInView } from "react-intersection-observer"; // Import useInView for lazy loading
 import AdminProjectCard from "../components/AdminProjectCard";
-
-// Skeleton Loader Component for placeholders
-const SkeletonCard = () => (
-  <div className="bg-white rounded-xl shadow-md p-4 space-y-3 animate-pulse">
-    <div className="flex justify-between items-center">
-      <div className="h-6 bg-gray-300 rounded w-3/4"></div>
-      <div className="h-6 bg-gray-300 rounded-full w-16"></div>
-    </div>
-    <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-    <div className="flex items-center justify-between">
-      <div className="h-4 bg-gray-300 rounded w-1/3"></div>
-      <div className="h-4 bg-gray-300 rounded w-1/4"></div>
-    </div>
-    <div className="w-full bg-gray-200 rounded-full h-2">
-      <div className="h-2 bg-gray-300 rounded-full w-1/2"></div>
-    </div>
-    <div className="flex justify-between mt-2">
-      <div className="h-4 bg-gray-300 rounded w-12"></div>
-      <div className="h-4 bg-gray-300 rounded w-12"></div>
-    </div>
-  </div>
-);
-
-// Lazy-loaded wrapper for AdminProjectCard
-const LazyAdminProjectCard = ({ task, assignedTo, userProgress, taskDueDate, status, priority, attachmentUrl, onEdit, onDelete }) => {
-  const { ref, inView } = useInView({
-    triggerOnce: true, // Load only once when the card enters the viewport
-    threshold: 0.1, // Trigger when 10% of the card is visible
-  });
-
-  return (
-    <div ref={ref}>
-      {inView ? (
-        <AdminProjectCard
-          task={task}
-          assignedTo={assignedTo}
-          userProgress={userProgress}
-          taskDueDate={taskDueDate}
-          status={status}
-          priority={priority}
-          attachmentUrl={attachmentUrl}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
-      ) : (
-        <SkeletonCard />
-      )}
-    </div>
-  );
-};
 
 const AdminDashboard = () => {
   const [admin, setAdmin] = useState(null);
@@ -376,7 +325,7 @@ const AdminDashboard = () => {
         <div className="w-full lg:w-2/3 mt-4 lg:mt-0">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {tasks.map((task) => (
-              <LazyAdminProjectCard
+              <AdminProjectCard
                 key={task._id}
                 task={task.task}
                 assignedTo={task.email}

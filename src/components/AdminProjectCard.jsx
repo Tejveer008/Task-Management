@@ -98,8 +98,9 @@ const AdminProjectCard = ({
                   src={fullAttachmentUrl}
                   alt="Task Attachment"
                   className="max-w-full h-auto rounded-md"
+                  loading="lazy" // Add lazy loading for the image
                   onError={() =>
-                    console.error("Failed to load image:", fullAttachmentUrl)
+                    console.error(`[${new Date().toISOString()}] Failed to load image:`, fullAttachmentUrl)
                   }
                 />
               ) : (

@@ -161,52 +161,32 @@ exports.getMe = async (req, res) => {
 // PUT /api/auth/update-profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { id, role } = req.user;
-    const { username, adminName } = req.body;
-    const profilePhoto = req.file ? `/uploads/${req.file.filename}` : undefined;
+    const userId = req.user.id; // From auth middleware
+    const { adminName, username, email } = req.body;
 
-    if (role === "user") {
-      if (!username) return res.status(400).json({ message: "Username is required" });
-      const user = await User.findById(id);
-      if (!user) return res.status(404).json({ message: "User not found" });
-
-      user.username = username;
-      if (profilePhoto) user.profilePhoto = profilePhoto;
-      await user.save();
-
-      return res.status(200).json({
-        id: user._id,
-        email: user.email,
-        role: "user",
-        username: user.username,
-        permissions: [],
-        profilePhoto: user.profilePhoto || "",
-      });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    if (role === "admin") {
-      if (!adminName) return res.status(400).json({ message: "Admin name is required" });
-      const admin = await Admin.findById(id);
-      if (!admin) return res.status(404).json({ message: "Admin not found" });
-
-      admin.adminName = adminName;
-      if (profilePhoto) admin.profilePhoto = profilePhoto;
-      await admin.save();
-
-      return res.status(200).json({
-        id: admin._id,
-        email: admin.email,
-        role: "admin",
-        adminName: admin.adminName,
-        permissions: ["manageTasks", "manageUsers"],
-        profilePhoto: admin.profilePhoto || "",
-      });
+    if (user.role === "admin") {
+      user.adminName = adminName || user.adminName;
+      user.email = email || user.email;
+    } else {
+      user.username = username || user.username;
     }
 
-    res.status(400).json({ message: "Invalid role" });
+    if (req.file) { // Assuming multer middleware
+      const result = await cloudinary.uploader.upload(req.file.path);
+      user.profilePhoto = result.secure_url;
+      // Delete temporary file if using diskStorage
+    }
+
+    await user.save();
+    res.status(200).json(user);
   } catch (err) {
-    console.error("UpdateProfile error:", err);
-    res.status(500).json({ message: "Failed to update profile" });
+    console.error("Update profile error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 // POST /api/auth/logout
