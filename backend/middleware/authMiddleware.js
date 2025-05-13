@@ -1,3 +1,4 @@
+// authMiddleware.js
 const jwt = require("jsonwebtoken");
 
 exports.protect = async (req, res, next) => {
@@ -6,13 +7,14 @@ exports.protect = async (req, res, next) => {
     try {
       token = req.cookies.token;
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded; // Assuming decoded contains { email, role, etc. }
+      req.user = decoded; // { id, email, role, etc. }
       next();
     } catch (err) {
-      res.status(401).json({ message: "Not authorized, token failed" });
+      console.error("Token verification error:", err);
+      return res.status(401).json({ message: "Not authorized, token failed" }); // Add return to stop middleware chain
     }
   } else {
-    res.status(401).json({ message: "Not authorized, no token" });
+    return res.status(401).json({ message: "Not authorized, no token" }); // Add return to stop middleware chain
   }
 };
 

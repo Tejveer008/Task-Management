@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const Task = require("../models/Task");
-const cloudinary = require("../utils/cloudinary"); // If you handle file/image uploads
+const cloudinary = require("../config/cloudinary"); // If you handle file/image uploads
 
 // GET /api/admin/users
 exports.getAllUsers = async (req, res) => {

@@ -54,14 +54,29 @@ const Signup = () => {
 
       const data = await response.json();
       if (response.ok) {
-        toast.success("Signup successful! Redirecting...", { position: "top-center" });
-        setTimeout(() => {
-          navigate(formData.role === "admin" ? "/admin-dashboard" : "/user-dashboard");
-        }, 1500);
+        toast.success("Signup successful! Please log in to continue.", { position: "top-center" });
+
+        // Clear client-side cookies to ensure the new token is used
+        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+
+        // Verify the token by fetching user data (optional, for validation)
+        const userRes = await fetch("http://localhost:8080/api/auth/me", {
+          credentials: "include",
+        });
+        const userData = await userRes.json();
+        if (userRes.ok) {
+          console.log("User data after signup:", userData);
+          setTimeout(() => {
+            navigate("/login"); // Redirect to login page
+          }, 1500);
+        } else {
+          throw new Error("Failed to verify token after signup");
+        }
       } else {
         toast.error(data.message || "Signup failed", { position: "top-center" });
       }
     } catch (error) {
+      console.error("Signup error:", error);
       toast.error("Something went wrong. Please try again.", { position: "top-center" });
     }
   };

@@ -16,10 +16,12 @@ const app = express();
 app.use(cors({ origin: ['http://localhost:5173', 'https://task-management-4gvv.onrender.com'],credentials: true }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Support FormData for file uploads
 app.use(cookieParser());
 
 // Serve static files from the uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 // API routes
 app.use("/api/auth", authRoutes);

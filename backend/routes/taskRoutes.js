@@ -2,53 +2,34 @@
 const express = require("express");
 const router = express.Router();
 const { protect, isAdmin } = require("../middleware/authMiddleware");
-const multer = require("multer");
-const path = require("path");
+const upload = require("../middleware/uploadMiddleware"); // Use the same middleware as adminRoutes.js
 const Task = require("../models/Task");
 
 const {
-  createTask,
-  getAllTasks,
+  getTasksByAdmin,
   getUserTasks,
+  createTask,
+  updateTask,
+  deleteTask,
 } = require("../controllers/taskController");
-
-const storage = multer.diskStorage({
-  destination: "./uploads/",
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
-const upload = multer({ storage });
 
 // Create a new task
 router.post(
   "/",
   protect,
   isAdmin,
-  upload.fields([{ name: "file", maxCount: 1 }, { name: "image", maxCount: 1 }]),
+  upload.fields([{ name: "file", maxCount: 2 }, { name: "image", maxCount: 2 }]),
   createTask
 );
 
-// Get all tasks
-router.get("/", protect, isAdmin, getAllTasks);
+// Get tasks for the logged-in admin
+router.get("/", protect, isAdmin, getTasksByAdmin);
 
 // Get user tasks
 router.get("/user/:email", protect, getUserTasks);
 
 // Delete a task
-router.delete("/:taskId", protect, isAdmin, async (req, res) => {
-  try {
-    const taskId = req.params.taskId;
-    const task = await Task.findByIdAndDelete(taskId);
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
-    }
-    res.json({ message: "Task deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
+router.delete("/:taskId", protect, isAdmin, deleteTask);
 
 // Update a task (Admin-only for full updates)
 router.put(
@@ -56,38 +37,7 @@ router.put(
   protect,
   isAdmin,
   upload.fields([{ name: "file", maxCount: 1 }, { name: "image", maxCount: 1 }]),
-  async (req, res) => {
-    try {
-      const taskId = req.params.taskId;
-      const { task, email, dueDate, priority, userName } = req.body;
-
-      const normalizedPriority = priority ? priority.toLowerCase() : "low";
-
-      const updatedTaskData = {
-        task,
-        email,
-        dueDate,
-        priority: normalizedPriority,
-        userName,
-      };
-
-      if (req.files && req.files.file) {
-        updatedTaskData.fileUrl = `/uploads/${req.files.file[0].filename}`;
-      }
-      if (req.files && req.files.image) {
-        updatedTaskData.imageUrl = `/uploads/${req.files.image[0].filename}`;
-      }
-
-      const updatedTask = await Task.findByIdAndUpdate(taskId, updatedTaskData, { new: true });
-      if (!updatedTask) {
-        return res.status(404).json({ message: "Task not found" });
-      }
-      res.json(updatedTask);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server error" });
-    }
-  }
+  updateTask
 );
 
 // Route for users to update task progress

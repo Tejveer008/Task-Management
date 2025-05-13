@@ -23,7 +23,6 @@ const UserProjectCard = ({
   dueDate,
   priority,
   assignedBy,
-  status,
   fileUrl,
   imageUrl,
   onProgressUpdate,

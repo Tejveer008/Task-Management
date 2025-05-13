@@ -6,13 +6,22 @@ const Admin = require("../models/Admin");
 const generateTokenAndSetCookie = (payload, res) => {
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1d" });
 
+  // Clear any existing token to avoid conflicts
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "Lax",
+    secure: false,
+  });
+
+  // Set new token
   res.cookie("token", token, {
     httpOnly: true,
     sameSite: "Lax",
-    secure: false, // use true in production with HTTPS
+    secure: false,
     maxAge: 86400000,
   });
 
+  // console.log("Generated Token for:", payload); // Debug log
   return payload;
 };
 
@@ -35,6 +44,7 @@ exports.signup = async (req, res) => {
         role: "user",
         username: newUser.username,
         permissions: [],
+        profilePhoto: newUser.profilePhoto || "",
       };
 
       generateTokenAndSetCookie(userPayload, res);
@@ -55,6 +65,7 @@ exports.signup = async (req, res) => {
         role: "admin",
         adminName: newAdmin.adminName,
         permissions: ["manageTasks", "manageUsers"],
+        profilePhoto: newAdmin.profilePhoto || "",
       };
 
       generateTokenAndSetCookie(adminPayload, res);
@@ -73,7 +84,6 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Try User
     const user = await User.findOne({ email });
     if (user && (await user.comparePassword(password))) {
       const userPayload = {
@@ -82,12 +92,12 @@ exports.login = async (req, res) => {
         role: "user",
         username: user.username,
         permissions: [],
+        profilePhoto: user.profilePhoto || "",
       };
       generateTokenAndSetCookie(userPayload, res);
       return res.status(200).json({ message: "Login successful", user: userPayload });
     }
 
-    // Try Admin
     const admin = await Admin.findOne({ email });
     if (admin && (await admin.comparePassword(password))) {
       const adminPayload = {
@@ -96,6 +106,7 @@ exports.login = async (req, res) => {
         role: "admin",
         adminName: admin.adminName,
         permissions: ["manageTasks", "manageUsers"],
+        profilePhoto: admin.profilePhoto || "",
       };
       generateTokenAndSetCookie(adminPayload, res);
       return res.status(200).json({ message: "Login successful", user: adminPayload });
@@ -112,6 +123,7 @@ exports.login = async (req, res) => {
 exports.getMe = async (req, res) => {
   try {
     const { id, role } = req.user;
+    // console.log("Fetching data for user:", req.user); // Debug log
 
     if (role === "user") {
       const user = await User.findById(id).select("-password");
@@ -122,6 +134,7 @@ exports.getMe = async (req, res) => {
         role: "user",
         username: user.username,
         permissions: [],
+        profilePhoto: user.profilePhoto || "",
       });
     }
 
@@ -134,6 +147,7 @@ exports.getMe = async (req, res) => {
         role: "admin",
         adminName: admin.adminName,
         permissions: ["manageTasks", "manageUsers"],
+        profilePhoto: admin.profilePhoto || "",
       });
     }
 
@@ -144,12 +158,63 @@ exports.getMe = async (req, res) => {
   }
 };
 
+// PUT /api/auth/update-profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { id, role } = req.user;
+    const { username, adminName } = req.body;
+    const profilePhoto = req.file ? `/uploads/${req.file.filename}` : undefined;
+
+    if (role === "user") {
+      if (!username) return res.status(400).json({ message: "Username is required" });
+      const user = await User.findById(id);
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      user.username = username;
+      if (profilePhoto) user.profilePhoto = profilePhoto;
+      await user.save();
+
+      return res.status(200).json({
+        id: user._id,
+        email: user.email,
+        role: "user",
+        username: user.username,
+        permissions: [],
+        profilePhoto: user.profilePhoto || "",
+      });
+    }
+
+    if (role === "admin") {
+      if (!adminName) return res.status(400).json({ message: "Admin name is required" });
+      const admin = await Admin.findById(id);
+      if (!admin) return res.status(404).json({ message: "Admin not found" });
+
+      admin.adminName = adminName;
+      if (profilePhoto) admin.profilePhoto = profilePhoto;
+      await admin.save();
+
+      return res.status(200).json({
+        id: admin._id,
+        email: admin.email,
+        role: "admin",
+        adminName: admin.adminName,
+        permissions: ["manageTasks", "manageUsers"],
+        profilePhoto: admin.profilePhoto || "",
+      });
+    }
+
+    res.status(400).json({ message: "Invalid role" });
+  } catch (err) {
+    console.error("UpdateProfile error:", err);
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+};
 // POST /api/auth/logout
 exports.logout = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     sameSite: "Lax",
-    secure: false, // Match the setting used in generateTokenAndSetCookie
+    secure: false,
   });
   res.json({ message: "Logged out successfully" });
 };
