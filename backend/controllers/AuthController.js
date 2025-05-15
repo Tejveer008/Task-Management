@@ -10,14 +10,14 @@ const generateTokenAndSetCookie = (payload, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     sameSite: "Lax",
-    secure: false,
+    secure: true,
   });
 
   // Set new token
   res.cookie("token", token, {
     httpOnly: true,
     sameSite: "Lax",
-    secure: false,
+    secure: true,
     maxAge: 86400000,
   });
 

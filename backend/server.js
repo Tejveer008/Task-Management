@@ -13,7 +13,7 @@ const taskRoutes = require("./routes/taskRoutes");
 const app = express();
 
 // Enable CORS
-app.use(cors({ origin: ['http://localhost:5173', 'https://task-management-4gvv.onrender.com'],credentials: true }));
+app.use(cors({ origin: ['http://localhost:5173', 'https://task-management-4gvv.onrender.com','https://task-management-jet-omega.vercel.app'],credentials: true }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Support FormData for file uploads
